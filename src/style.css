@@ -1,0 +1,236 @@
+:root {
+  font:
+    13px -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  color: #222;
+  background: #f4f4f4;
+  color-scheme: light;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#app {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+button {
+  border: 1px solid #b7b7b7;
+  background: linear-gradient(#fff, #eee);
+  border-radius: 5px;
+  padding: 4px 12px;
+  color: #222;
+  cursor: pointer;
+}
+button:active {
+  background: #ddd;
+}
+button.primary {
+  background: #087df5;
+  color: white;
+  border-color: #087df5;
+}
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+#app {
+  display: flex;
+  flex-direction: column;
+}
+#toolbar {
+  display: flex;
+  gap: 3px;
+  padding: 6px 10px;
+  border-bottom: 1px solid #aaa;
+  background: linear-gradient(#fafafa, #dedede);
+  flex-wrap: wrap;
+}
+#toolbar[hidden] {
+  display: none;
+}
+#toolbar button {
+  padding: 3px 8px;
+  min-width: 26px;
+}
+#workspace {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+}
+#editor {
+  width: 50%;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+#divider {
+  width: 1px;
+  position: relative;
+  background: #b8b8b8;
+  cursor: col-resize;
+  z-index: 2;
+}
+#divider:after {
+  content: "";
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  top: 0;
+  bottom: 0;
+}
+#preview {
+  flex: 1;
+  border: 0;
+  background: white;
+  min-width: 0;
+  height: 100%;
+}
+.cm-editor {
+  height: 100%;
+}
+.cm-scroller {
+  overflow: auto;
+}
+.cm-editor.cm-focused {
+  outline: none;
+}
+.cm-search {
+  font-family: -apple-system, sans-serif;
+  color: #222;
+  background: #eee;
+}
+#status {
+  font-size: 11px;
+  color: #777;
+  background: #eee;
+  border-top: 1px solid #ccc;
+  padding: 3px 9px;
+  text-align: right;
+}
+#status[hidden] {
+  display: none;
+}
+dialog {
+  border: 1px solid #bbb;
+  border-radius: 10px;
+  box-shadow: 0 15px 70px #0005;
+  padding: 22px;
+  max-width: 520px;
+  min-width: 340px;
+  color: #222;
+}
+dialog::backdrop {
+  background: #0002;
+}
+dialog h2 {
+  font-size: 16px;
+  margin: 0 0 12px;
+}
+dialog p {
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+dialog .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+dialog label {
+  display: block;
+  margin: 10px 0;
+}
+dialog input[type="text"] {
+  width: 100%;
+  padding: 5px;
+}
+#toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  border-radius: 7px;
+  background: #222e;
+  color: white;
+  max-width: 85%;
+  z-index: 10;
+  white-space: pre-wrap;
+}
+#toast:empty {
+  display: none;
+}
+.preferences {
+  overflow: auto !important;
+  background: #ececec;
+}
+#pref-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border-bottom: 1px solid #bbb;
+  background: linear-gradient(#fafafa, #ddd);
+}
+#pref-tabs button {
+  border: 0;
+  background: transparent;
+  border-radius: 5px;
+  min-width: 85px;
+  padding: 7px;
+}
+#pref-tabs button.active {
+  background: #c9c9c9;
+}
+.pref-content {
+  padding: 20px 40px;
+  overflow: auto;
+  flex: 1;
+}
+.pref-content h2 {
+  font-size: 14px;
+  margin: 18px 0 12px;
+}
+.pref-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 10px 0;
+  min-height: 23px;
+}
+.pref-row input[type="number"] {
+  width: 80px;
+}
+.pref-row input[type="text"] {
+  width: 240px;
+}
+.pref-row select {
+  max-width: 270px;
+}
+.pref-note {
+  color: #777;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.pref-footer {
+  border-top: 1px solid #ccc;
+  padding: 10px 20px;
+  text-align: right;
+}
+a {
+  color: #0679df;
+  cursor: pointer;
+}
+kbd {
+  font-family: inherit;
+  color: #666;
+}

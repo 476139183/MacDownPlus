@@ -1,0 +1,694 @@
+[
+  {
+    "id": "1Xt-HY-uBw",
+    "title": "MacDown Rust",
+    "action": "",
+    "shortcut": "",
+    "children": [
+      {
+        "id": "5kV-Vb-QxS",
+        "title": "About MacDown Rust",
+        "action": "orderFrontStandardAboutPanel",
+        "shortcut": ""
+      },
+      {
+        "id": "8xL-1V-VPX",
+        "title": "Check for Updates\u2026",
+        "action": "checkForUpdates",
+        "shortcut": ""
+      },
+      {
+        "separator": true
+      },
+      {
+        "id": "BOF-NM-1cW",
+        "title": "Preferences\u2026",
+        "action": "showPreferencesWindow",
+        "shortcut": "CmdOrCtrl+,"
+      },
+      {
+        "separator": true
+      },
+      {
+        "id": "NMo-om-nkz",
+        "title": "Services",
+        "action": "",
+        "shortcut": "",
+        "children": []
+      },
+      {
+        "separator": true
+      },
+      {
+        "id": "Olw-nP-bQN",
+        "title": "Hide MacDown Rust",
+        "action": "hide",
+        "shortcut": "CmdOrCtrl+H"
+      },
+      {
+        "id": "Vdr-fp-XzO",
+        "title": "Hide Others",
+        "action": "hideOtherApplications",
+        "shortcut": "CmdOrCtrl+Alt+H"
+      },
+      {
+        "id": "Kd2-mp-pUS",
+        "title": "Show All",
+        "action": "unhideAllApplications",
+        "shortcut": ""
+      },
+      {
+        "separator": true
+      },
+      {
+        "id": "4sb-4s-VLi",
+        "title": "Quit MacDown Rust",
+        "action": "terminate",
+        "shortcut": "CmdOrCtrl+Q"
+      }
+    ]
+  },
+  {
+    "id": "dMs-cI-mzQ",
+    "title": "File",
+    "action": "",
+    "shortcut": "",
+    "children": [
+      {
+        "id": "Was-JA-tGl",
+        "title": "New",
+        "action": "newDocument",
+        "shortcut": "CmdOrCtrl+N"
+      },
+      {
+        "id": "IAo-SY-fd9",
+        "title": "Open\u2026",
+        "action": "openDocument",
+        "shortcut": "CmdOrCtrl+O"
+      },
+      {
+        "id": "tXI-mr-wws",
+        "title": "Open Recent",
+        "action": "",
+        "shortcut": "",
+        "children": [
+          {
+            "id": "vNY-rz-j42",
+            "title": "Clear Menu",
+            "action": "clearRecentDocuments",
+            "shortcut": ""
+          }
+        ]
+      },
+      {
+        "separator": true
+      },
+      {
+        "id": "DVo-aG-piG",
+        "title": "Close",
+        "action": "performClose",
+        "shortcut": "CmdOrCtrl+W"
+      },
+      {
+        "id": "pxx-59-PXV",
+        "title": "Save\u2026",
+        "action": "saveDocument",
+        "shortcut": "CmdOrCtrl+S"
+      },
+      {
+        "id": "Bw7-FT-i3A",
+        "title": "Save As\u2026",
+        "action": "saveDocumentAs",
+        "shortcut": "CmdOrCtrl+Shift+S"
+      },
+      {
+        "id": "KaW-ft-85H",
+        "title": "Revert to Saved",
+        "action": "revertDocumentToSaved",
+        "shortcut": ""
+      },
+      {
+        "separator": true
+      },
+      {
+        "id": "5mp-ev-1el",
+        "title": "Export",
+        "action": "",
+        "shortcut": "",
+        "children": [
+          {
+            "id": "dGm-Yl-i3Z",
+            "title": "HTML\u2026",
+            "action": "exportHtml",
+            "shortcut": "CmdOrCtrl+Alt+E"
+          },
+          {
+            "id": "XFN-MJ-RrW",
+            "title": "PDF\u2026",
+            "action": "exportPdf",
+            "shortcut": "CmdOrCtrl+Alt+P"
+          }
+        ]
+      },
+      {
+        "separator": true
+      },
+      {
+        "id": "qIS-W8-SiK",
+        "title": "Page Setup\u2026",
+        "action": "runPageLayout",
+        "shortcut": "CmdOrCtrl+Shift+P"
+      },
+      {
+        "id": "aTl-1u-JFS",
+        "title": "Print\u2026",
+        "action": "printDocument",
+        "shortcut": "CmdOrCtrl+P"
+      }
+    ]
+  },
+  {
+    "id": "5QF-Oa-p0T",
+    "title": "Edit",
+    "action": "",
+    "shortcut": "",
+    "children": [
+      {
+        "id": "dRJ-4n-Yzg",
+        "title": "Undo",
+        "action": "undo",
+        "shortcut": "CmdOrCtrl+Z"
+      },
+      {
+        "id": "6dh-zS-Vam",
+        "title": "Redo",
+        "action": "redo",
+        "shortcut": "CmdOrCtrl+Shift+Z"
+      },
+      {
+        "separator": true
+      },
+      {
+        "id": "uRl-iY-unG",
+        "title": "Cut",
+        "action": "cut",
+        "shortcut": "CmdOrCtrl+X"
+      },
+      {
+        "id": "x3v-GG-iWU",
+        "title": "Copy",
+        "action": "copy",
+        "shortcut": "CmdOrCtrl+C"
+      },
+      {
+        "id": "gVA-U4-sdL",
+        "title": "Paste",
+        "action": "paste",
+        "shortcut": "CmdOrCtrl+V"
+      },
+      {
+        "id": "pa3-QI-u2k",
+        "title": "Delete",
+        "action": "delete",
+        "shortcut": ""
+      },
+      {
+        "id": "Ruw-6m-B2m",
+        "title": "Select All",
+        "action": "selectAll",
+        "shortcut": "CmdOrCtrl+A"
+      },
+      {
+        "separator": true
+      },
+      {
+        "id": "4EN-yA-p0u",
+        "title": "Find",
+        "action": "",
+        "shortcut": "",
+        "children": [
+          {
+            "id": "Xz5-n4-O0W",
+            "title": "Find\u2026",
+            "action": "performFindPanelAction:1",
+            "shortcut": "CmdOrCtrl+F"
+          },
+          {
+            "id": "YEy-JH-Tfz",
+            "title": "Find and Replace\u2026",
+            "action": "performFindPanelAction:12",
+            "shortcut": "CmdOrCtrl+Alt+F"
+          },
+          {
+            "id": "q09-fT-Sye",
+            "title": "Find Next",
+            "action": "performFindPanelAction:2",
+            "shortcut": "CmdOrCtrl+G"
+          },
+          {
+            "id": "OwM-mh-QMV",
+            "title": "Find Previous",
+            "action": "performFindPanelAction:3",
+            "shortcut": "CmdOrCtrl+Shift+G"
+          },
+          {
+            "id": "buJ-ug-pKt",
+            "title": "Use Selection for Find",
+            "action": "performFindPanelAction:7",
+            "shortcut": "CmdOrCtrl+E"
+          },
+          {
+            "id": "S0p-oC-mLd",
+            "title": "Jump to Selection",
+            "action": "centerSelectionInVisibleArea",
+            "shortcut": "CmdOrCtrl+J"
+          }
+        ]
+      },
+      {
+        "id": "Dv1-io-Yv7",
+        "title": "Spelling and Grammar",
+        "action": "",
+        "shortcut": "",
+        "children": [
+          {
+            "id": "HFo-cy-zxI",
+            "title": "Show Spelling and Grammar",
+            "action": "showGuessPanel",
+            "shortcut": "CmdOrCtrl+:"
+          },
+          {
+            "id": "hz2-CU-CR7",
+            "title": "Check Document Now",
+            "action": "checkSpelling",
+            "shortcut": "CmdOrCtrl+;"
+          },
+          {
+            "separator": true
+          },
+          {
+            "id": "rbD-Rh-wIN",
+            "title": "Check Spelling While Typing",
+            "action": "toggleContinuousSpellChecking",
+            "shortcut": ""
+          },
+          {
+            "id": "mK6-2p-4JG",
+            "title": "Check Grammar With Spelling",
+            "action": "toggleGrammarChecking",
+            "shortcut": ""
+          },
+          {
+            "id": "78Y-hA-62v",
+            "title": "Correct Spelling Automatically",
+            "action": "toggleAutomaticSpellingCorrection",
+            "shortcut": ""
+          }
+        ]
+      },
+      {
+        "id": "9ic-FL-obx",
+        "title": "Substitutions",
+        "action": "",
+        "shortcut": "",
+        "children": [
+          {
+            "id": "z6F-FW-3nz",
+            "title": "Show Substitutions",
+            "action": "orderFrontSubstitutionsPanel",
+            "shortcut": ""
+          },
+          {
+            "separator": true
+          },
+          {
+            "id": "9yt-4B-nSM",
+            "title": "Smart Copy/Paste",
+            "action": "toggleSmartInsertDelete",
+            "shortcut": ""
+          },
+          {
+            "id": "hQb-2v-fYv",
+            "title": "Smart Quotes",
+            "action": "toggleAutomaticQuoteSubstitution",
+            "shortcut": ""
+          },
+          {
+            "id": "rgM-f4-ycn",
+            "title": "Smart Dashes",
+            "action": "toggleAutomaticDashSubstitution",
+            "shortcut": ""
+          },
+          {
+            "id": "tRr-pd-1PS",
+            "title": "Data Detectors",
+            "action": "toggleAutomaticDataDetection",
+            "shortcut": ""
+          },
+          {
+            "id": "HFQ-gK-NFA",
+            "title": "Text Replacement",
+            "action": "toggleAutomaticTextReplacement",
+            "shortcut": ""
+          }
+        ]
+      },
+      {
+        "id": "2oI-Rn-ZJC",
+        "title": "Transformations",
+        "action": "",
+        "shortcut": "",
+        "children": [
+          {
+            "id": "vmV-6d-7jI",
+            "title": "Make Upper Case",
+            "action": "uppercaseWord",
+            "shortcut": ""
+          },
+          {
+            "id": "d9M-CD-aMd",
+            "title": "Make Lower Case",
+            "action": "lowercaseWord",
+            "shortcut": ""
+          },
+          {
+            "id": "UEZ-Bs-lqG",
+            "title": "Capitalize",
+            "action": "capitalizeWord",
+            "shortcut": ""
+          }
+        ]
+      },
+      {
+        "id": "xrE-MZ-jX0",
+        "title": "Speech",
+        "action": "",
+        "shortcut": "",
+        "children": [
+          {
+            "id": "Ynk-f8-cLZ",
+            "title": "Start Speaking",
+            "action": "startSpeaking",
+            "shortcut": ""
+          },
+          {
+            "id": "Oyz-dy-DGm",
+            "title": "Stop Speaking",
+            "action": "stopSpeaking",
+            "shortcut": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "xSb-2f-W1r",
+    "title": "View",
+    "action": "",
+    "shortcut": "",
+    "children": [
+      {
+        "id": "Vh1-jg-bbV",
+        "title": "Render Markdown",
+        "action": "render",
+        "shortcut": "CmdOrCtrl+R"
+      },
+      {
+        "separator": true
+      },
+      {
+        "id": "VW7-VH-9yl",
+        "title": "Left 1:3 Right",
+        "action": "setEditorOneQuarter",
+        "shortcut": ""
+      },
+      {
+        "id": "hOV-YQ-vzy",
+        "title": "Left 1:1 Right",
+        "action": "setEqualSplit",
+        "shortcut": "CmdOrCtrl+Shift+0"
+      },
+      {
+        "id": "NZX-Ev-sWt",
+        "title": "Left 3:1 Right",
+        "action": "setEditorThreeQuarters",
+        "shortcut": ""
+      },
+      {
+        "id": "T74-vt-YUA",
+        "title": "Hide Preview Pane",
+        "action": "togglePreviewPane",
+        "shortcut": "CmdOrCtrl+Shift+H"
+      },
+      {
+        "id": "wHk-AQ-iOQ",
+        "title": "Hide Editor Pane",
+        "action": "toggleEditorPane",
+        "shortcut": "CmdOrCtrl+Shift+E"
+      },
+      {
+        "separator": true
+      },
+      {
+        "id": "fKI-yk-0lv",
+        "title": "Show Toolbar",
+        "action": "toggleToolbar",
+        "shortcut": "CmdOrCtrl+Alt+T"
+      },
+      {
+        "separator": true
+      },
+      {
+        "id": "1gz-YB-DZE",
+        "title": "Enter Full Screen",
+        "action": "toggleFullScreen",
+        "shortcut": "CmdOrCtrl+Ctrl+F"
+      }
+    ]
+  },
+  {
+    "id": "jxT-CU-nIS",
+    "title": "Format",
+    "action": "",
+    "shortcut": "",
+    "children": [
+      {
+        "id": "ts7-v5-Htm",
+        "title": "Copy HTML",
+        "action": "copyHtml",
+        "shortcut": "CmdOrCtrl+Alt+C"
+      },
+      {
+        "separator": true
+      },
+      {
+        "id": "Rb9-MG-IjX",
+        "title": "Strong",
+        "action": "toggleStrong",
+        "shortcut": "CmdOrCtrl+B"
+      },
+      {
+        "id": "4UH-k2-fgy",
+        "title": "Emphasize",
+        "action": "toggleEmphasis",
+        "shortcut": "CmdOrCtrl+I"
+      },
+      {
+        "id": "98U-cK-P7J",
+        "title": "Underline",
+        "action": "toggleUnderline",
+        "shortcut": "CmdOrCtrl+U"
+      },
+      {
+        "id": "9CN-Qi-Fln",
+        "title": "Strikethrough",
+        "action": "toggleStrikethrough",
+        "shortcut": "CmdOrCtrl+-"
+      },
+      {
+        "id": "2Os-ij-Aup",
+        "title": "Highlight",
+        "action": "toggleHighlight",
+        "shortcut": "CmdOrCtrl+="
+      },
+      {
+        "id": "iRQ-Q6-N4K",
+        "title": "Inline Code",
+        "action": "toggleInlineCode",
+        "shortcut": "CmdOrCtrl+K"
+      },
+      {
+        "id": "i8c-gf-w29",
+        "title": "Comment",
+        "action": "toggleComment",
+        "shortcut": "CmdOrCtrl+/"
+      },
+      {
+        "separator": true
+      },
+      {
+        "id": "e8h-vX-NQb",
+        "title": "Convert To",
+        "action": "",
+        "shortcut": "",
+        "children": [
+          {
+            "id": "NLm-rz-EyT",
+            "title": "Header 1",
+            "action": "convertToH1",
+            "shortcut": "CmdOrCtrl+1"
+          },
+          {
+            "id": "0WP-T5-QxP",
+            "title": "Header 2",
+            "action": "convertToH2",
+            "shortcut": "CmdOrCtrl+2"
+          },
+          {
+            "id": "kSO-QG-dHa",
+            "title": "Header 3",
+            "action": "convertToH3",
+            "shortcut": "CmdOrCtrl+3"
+          },
+          {
+            "id": "B98-b8-che",
+            "title": "Header 4",
+            "action": "convertToH4",
+            "shortcut": "CmdOrCtrl+4"
+          },
+          {
+            "id": "wlq-BA-PKH",
+            "title": "Header 5",
+            "action": "convertToH5",
+            "shortcut": "CmdOrCtrl+5"
+          },
+          {
+            "id": "D4C-PE-qJi",
+            "title": "Header 6",
+            "action": "convertToH6",
+            "shortcut": "CmdOrCtrl+6"
+          },
+          {
+            "id": "xN5-GU-ASF",
+            "title": "Paragraph",
+            "action": "convertToParagraph",
+            "shortcut": "CmdOrCtrl+0"
+          }
+        ]
+      },
+      {
+        "separator": true
+      },
+      {
+        "id": "jn0-Kb-yH7",
+        "title": "Ordered List",
+        "action": "toggleOrderedList",
+        "shortcut": "CmdOrCtrl+Shift+O"
+      },
+      {
+        "id": "jn0-Kb-yH6",
+        "title": "Unordered List",
+        "action": "toggleUnorderedList",
+        "shortcut": "CmdOrCtrl+Shift+U"
+      },
+      {
+        "id": "twd-Mb-qNx",
+        "title": "Blockquote",
+        "action": "toggleBlockquote",
+        "shortcut": "CmdOrCtrl+Shift+B"
+      },
+      {
+        "separator": true
+      },
+      {
+        "id": "g9Y-GM-gdh",
+        "title": "Shift Right",
+        "action": "indent",
+        "shortcut": "CmdOrCtrl+]"
+      },
+      {
+        "id": "Jzs-tR-jkL",
+        "title": "Shift Left",
+        "action": "unindent",
+        "shortcut": "CmdOrCtrl+["
+      },
+      {
+        "separator": true
+      },
+      {
+        "id": "GIg-Wo-P8m",
+        "title": "Link",
+        "action": "toggleLink",
+        "shortcut": "CmdOrCtrl+Shift+K"
+      },
+      {
+        "id": "VkR-aw-5AU",
+        "title": "Image",
+        "action": "toggleImage",
+        "shortcut": "CmdOrCtrl+Shift+I"
+      },
+      {
+        "id": "zHE-JL-8eu",
+        "title": "New Paragraph",
+        "action": "insertNewParagraph",
+        "shortcut": ""
+      }
+    ]
+  },
+  {
+    "id": "bMu-UN-Yfx",
+    "title": "Plug-ins",
+    "action": "",
+    "shortcut": "",
+    "children": []
+  },
+  {
+    "id": "aUF-d1-5bR",
+    "title": "Window",
+    "action": "",
+    "shortcut": "",
+    "children": [
+      {
+        "id": "OY7-WF-poV",
+        "title": "Minimize",
+        "action": "performMiniaturize",
+        "shortcut": "CmdOrCtrl+M"
+      },
+      {
+        "id": "R4o-n2-Eq4",
+        "title": "Zoom",
+        "action": "performZoom",
+        "shortcut": "CmdOrCtrl+Shift+M"
+      },
+      {
+        "separator": true
+      },
+      {
+        "id": "LE2-aR-0XJ",
+        "title": "Bring All to Front",
+        "action": "arrangeInFront",
+        "shortcut": ""
+      }
+    ]
+  },
+  {
+    "id": "wpr-3q-Mcd",
+    "title": "Help",
+    "action": "",
+    "shortcut": "",
+    "children": [
+      {
+        "id": "ugx-EN-xKu",
+        "title": "MacDown Rust Help",
+        "action": "showHelp",
+        "shortcut": ""
+      },
+      {
+        "id": "K3J-v5-s91",
+        "title": "Contributing to MacDown Rust",
+        "action": "showContributing",
+        "shortcut": ""
+      }
+    ]
+  }
+]

@@ -1,0 +1,1092 @@
+{
+  "upstream": "https://github.com/MacDownApp/macdown",
+  "commit": "3e2a2bf101c215c143bf00d9f857965f0ee82487",
+  "menus": [
+    {
+      "title": "MacDown",
+      "key": null,
+      "action": [
+        "orderFrontStandardAboutPanel:",
+        "checkForUpdates:",
+        "showPreferencesWindow:",
+        "hide:",
+        "hideOtherApplications:",
+        "unhideAllApplications:",
+        "terminate:"
+      ]
+    },
+    {
+      "title": "About MacDown",
+      "key": null,
+      "action": [
+        "orderFrontStandardAboutPanel:"
+      ]
+    },
+    {
+      "title": "Check for Updates…",
+      "key": null,
+      "action": [
+        "checkForUpdates:"
+      ]
+    },
+    {
+      "title": "Preferences…",
+      "key": ",",
+      "action": [
+        "showPreferencesWindow:"
+      ]
+    },
+    {
+      "title": "Services",
+      "key": null,
+      "action": []
+    },
+    {
+      "title": "Hide MacDown",
+      "key": "h",
+      "action": [
+        "hide:"
+      ]
+    },
+    {
+      "title": "Hide Others",
+      "key": "h",
+      "action": [
+        "hideOtherApplications:"
+      ]
+    },
+    {
+      "title": "Show All",
+      "key": null,
+      "action": [
+        "unhideAllApplications:"
+      ]
+    },
+    {
+      "title": "Quit MacDown",
+      "key": "q",
+      "action": [
+        "terminate:"
+      ]
+    },
+    {
+      "title": "File",
+      "key": null,
+      "action": [
+        "newDocument:",
+        "openDocument:",
+        "clearRecentDocuments:",
+        "performClose:",
+        "saveDocument:",
+        "saveDocumentAs:",
+        "revertDocumentToSaved:",
+        "exportHtml:",
+        "exportPdf:",
+        "runPageLayout:",
+        "printDocument:"
+      ]
+    },
+    {
+      "title": "New",
+      "key": "n",
+      "action": [
+        "newDocument:"
+      ]
+    },
+    {
+      "title": "Open…",
+      "key": "o",
+      "action": [
+        "openDocument:"
+      ]
+    },
+    {
+      "title": "Open Recent",
+      "key": null,
+      "action": [
+        "clearRecentDocuments:"
+      ]
+    },
+    {
+      "title": "Clear Menu",
+      "key": null,
+      "action": [
+        "clearRecentDocuments:"
+      ]
+    },
+    {
+      "title": "Close",
+      "key": "w",
+      "action": [
+        "performClose:"
+      ]
+    },
+    {
+      "title": "Save…",
+      "key": "s",
+      "action": [
+        "saveDocument:"
+      ]
+    },
+    {
+      "title": "Save As…",
+      "key": "S",
+      "action": [
+        "saveDocumentAs:"
+      ]
+    },
+    {
+      "title": "Revert to Saved",
+      "key": null,
+      "action": [
+        "revertDocumentToSaved:"
+      ]
+    },
+    {
+      "title": "Export",
+      "key": null,
+      "action": [
+        "exportHtml:",
+        "exportPdf:"
+      ]
+    },
+    {
+      "title": "HTML…",
+      "key": "e",
+      "action": [
+        "exportHtml:"
+      ]
+    },
+    {
+      "title": "PDF…",
+      "key": "p",
+      "action": [
+        "exportPdf:"
+      ]
+    },
+    {
+      "title": "Page Setup…",
+      "key": "P",
+      "action": [
+        "runPageLayout:"
+      ]
+    },
+    {
+      "title": "Print…",
+      "key": "p",
+      "action": [
+        "printDocument:"
+      ]
+    },
+    {
+      "title": "Edit",
+      "key": null,
+      "action": [
+        "undo:",
+        "redo:",
+        "cut:",
+        "copy:",
+        "paste:",
+        "delete:",
+        "selectAll:",
+        "performFindPanelAction:",
+        "performFindPanelAction:",
+        "performFindPanelAction:",
+        "performFindPanelAction:",
+        "performFindPanelAction:",
+        "centerSelectionInVisibleArea:",
+        "showGuessPanel:",
+        "checkSpelling:",
+        "toggleContinuousSpellChecking:",
+        "toggleGrammarChecking:",
+        "toggleAutomaticSpellingCorrection:",
+        "orderFrontSubstitutionsPanel:",
+        "toggleSmartInsertDelete:",
+        "toggleAutomaticQuoteSubstitution:",
+        "toggleAutomaticDashSubstitution:",
+        "toggleAutomaticDataDetection:",
+        "toggleAutomaticTextReplacement:",
+        "uppercaseWord:",
+        "lowercaseWord:",
+        "capitalizeWord:",
+        "startSpeaking:",
+        "stopSpeaking:"
+      ]
+    },
+    {
+      "title": "Undo",
+      "key": "z",
+      "action": [
+        "undo:"
+      ]
+    },
+    {
+      "title": "Redo",
+      "key": "Z",
+      "action": [
+        "redo:"
+      ]
+    },
+    {
+      "title": "Cut",
+      "key": "x",
+      "action": [
+        "cut:"
+      ]
+    },
+    {
+      "title": "Copy",
+      "key": "c",
+      "action": [
+        "copy:"
+      ]
+    },
+    {
+      "title": "Paste",
+      "key": "v",
+      "action": [
+        "paste:"
+      ]
+    },
+    {
+      "title": "Delete",
+      "key": null,
+      "action": [
+        "delete:"
+      ]
+    },
+    {
+      "title": "Select All",
+      "key": "a",
+      "action": [
+        "selectAll:"
+      ]
+    },
+    {
+      "title": "Find",
+      "key": null,
+      "action": [
+        "performFindPanelAction:",
+        "performFindPanelAction:",
+        "performFindPanelAction:",
+        "performFindPanelAction:",
+        "performFindPanelAction:",
+        "centerSelectionInVisibleArea:"
+      ]
+    },
+    {
+      "title": "Find…",
+      "key": "f",
+      "action": [
+        "performFindPanelAction:"
+      ]
+    },
+    {
+      "title": "Find and Replace…",
+      "key": "f",
+      "action": [
+        "performFindPanelAction:"
+      ]
+    },
+    {
+      "title": "Find Next",
+      "key": "g",
+      "action": [
+        "performFindPanelAction:"
+      ]
+    },
+    {
+      "title": "Find Previous",
+      "key": "G",
+      "action": [
+        "performFindPanelAction:"
+      ]
+    },
+    {
+      "title": "Use Selection for Find",
+      "key": "e",
+      "action": [
+        "performFindPanelAction:"
+      ]
+    },
+    {
+      "title": "Jump to Selection",
+      "key": "j",
+      "action": [
+        "centerSelectionInVisibleArea:"
+      ]
+    },
+    {
+      "title": "Spelling and Grammar",
+      "key": null,
+      "action": [
+        "showGuessPanel:",
+        "checkSpelling:",
+        "toggleContinuousSpellChecking:",
+        "toggleGrammarChecking:",
+        "toggleAutomaticSpellingCorrection:"
+      ]
+    },
+    {
+      "title": "Show Spelling and Grammar",
+      "key": ":",
+      "action": [
+        "showGuessPanel:"
+      ]
+    },
+    {
+      "title": "Check Document Now",
+      "key": ";",
+      "action": [
+        "checkSpelling:"
+      ]
+    },
+    {
+      "title": "Check Spelling While Typing",
+      "key": null,
+      "action": [
+        "toggleContinuousSpellChecking:"
+      ]
+    },
+    {
+      "title": "Check Grammar With Spelling",
+      "key": null,
+      "action": [
+        "toggleGrammarChecking:"
+      ]
+    },
+    {
+      "title": "Correct Spelling Automatically",
+      "key": null,
+      "action": [
+        "toggleAutomaticSpellingCorrection:"
+      ]
+    },
+    {
+      "title": "Substitutions",
+      "key": null,
+      "action": [
+        "orderFrontSubstitutionsPanel:",
+        "toggleSmartInsertDelete:",
+        "toggleAutomaticQuoteSubstitution:",
+        "toggleAutomaticDashSubstitution:",
+        "toggleAutomaticDataDetection:",
+        "toggleAutomaticTextReplacement:"
+      ]
+    },
+    {
+      "title": "Show Substitutions",
+      "key": null,
+      "action": [
+        "orderFrontSubstitutionsPanel:"
+      ]
+    },
+    {
+      "title": "Smart Copy/Paste",
+      "key": null,
+      "action": [
+        "toggleSmartInsertDelete:"
+      ]
+    },
+    {
+      "title": "Smart Quotes",
+      "key": null,
+      "action": [
+        "toggleAutomaticQuoteSubstitution:"
+      ]
+    },
+    {
+      "title": "Smart Dashes",
+      "key": null,
+      "action": [
+        "toggleAutomaticDashSubstitution:"
+      ]
+    },
+    {
+      "title": "Data Detectors",
+      "key": null,
+      "action": [
+        "toggleAutomaticDataDetection:"
+      ]
+    },
+    {
+      "title": "Text Replacement",
+      "key": null,
+      "action": [
+        "toggleAutomaticTextReplacement:"
+      ]
+    },
+    {
+      "title": "Transformations",
+      "key": null,
+      "action": [
+        "uppercaseWord:",
+        "lowercaseWord:",
+        "capitalizeWord:"
+      ]
+    },
+    {
+      "title": "Make Upper Case",
+      "key": null,
+      "action": [
+        "uppercaseWord:"
+      ]
+    },
+    {
+      "title": "Make Lower Case",
+      "key": null,
+      "action": [
+        "lowercaseWord:"
+      ]
+    },
+    {
+      "title": "Capitalize",
+      "key": null,
+      "action": [
+        "capitalizeWord:"
+      ]
+    },
+    {
+      "title": "Speech",
+      "key": null,
+      "action": [
+        "startSpeaking:",
+        "stopSpeaking:"
+      ]
+    },
+    {
+      "title": "Start Speaking",
+      "key": null,
+      "action": [
+        "startSpeaking:"
+      ]
+    },
+    {
+      "title": "Stop Speaking",
+      "key": null,
+      "action": [
+        "stopSpeaking:"
+      ]
+    },
+    {
+      "title": "View",
+      "key": null,
+      "action": [
+        "render:",
+        "setEditorOneQuarter:",
+        "setEqualSplit:",
+        "setEditorThreeQuarters:",
+        "togglePreviewPane:",
+        "toggleEditorPane:",
+        "toggleToolbar:",
+        "toggleFullScreen:"
+      ]
+    },
+    {
+      "title": "Render Markdown",
+      "key": "r",
+      "action": [
+        "render:"
+      ]
+    },
+    {
+      "title": "Left 1:3 Right",
+      "key": null,
+      "action": [
+        "setEditorOneQuarter:"
+      ]
+    },
+    {
+      "title": "Left 1:1 Right",
+      "key": "0",
+      "action": [
+        "setEqualSplit:"
+      ]
+    },
+    {
+      "title": "Left 3:1 Right",
+      "key": null,
+      "action": [
+        "setEditorThreeQuarters:"
+      ]
+    },
+    {
+      "title": "Hide Preview Pane",
+      "key": "H",
+      "action": [
+        "togglePreviewPane:"
+      ]
+    },
+    {
+      "title": "Hide Editor Pane",
+      "key": "E",
+      "action": [
+        "toggleEditorPane:"
+      ]
+    },
+    {
+      "title": "Show Toolbar",
+      "key": "t",
+      "action": [
+        "toggleToolbar:"
+      ]
+    },
+    {
+      "title": "Enter Full Screen",
+      "key": "f",
+      "action": [
+        "toggleFullScreen:"
+      ]
+    },
+    {
+      "title": "Format",
+      "key": null,
+      "action": [
+        "copyHtml:",
+        "toggleStrong:",
+        "toggleEmphasis:",
+        "toggleUnderline:",
+        "toggleStrikethrough:",
+        "toggleHighlight:",
+        "toggleInlineCode:",
+        "toggleComment:",
+        "convertToH1:",
+        "convertToH2:",
+        "convertToH3:",
+        "convertToH4:",
+        "convertToH5:",
+        "convertToH6:",
+        "convertToParagraph:",
+        "toggleOrderedList:",
+        "toggleUnorderedList:",
+        "toggleBlockquote:",
+        "indent:",
+        "unindent:",
+        "toggleLink:",
+        "toggleImage:",
+        "insertNewParagraph:"
+      ]
+    },
+    {
+      "title": "Copy HTML",
+      "key": "c",
+      "action": [
+        "copyHtml:"
+      ]
+    },
+    {
+      "title": "Strong",
+      "key": "b",
+      "action": [
+        "toggleStrong:"
+      ]
+    },
+    {
+      "title": "Emphasize",
+      "key": "i",
+      "action": [
+        "toggleEmphasis:"
+      ]
+    },
+    {
+      "title": "Underline",
+      "key": "u",
+      "action": [
+        "toggleUnderline:"
+      ]
+    },
+    {
+      "title": "Strikethrough",
+      "key": "-",
+      "action": [
+        "toggleStrikethrough:"
+      ]
+    },
+    {
+      "title": "Highlight",
+      "key": "=",
+      "action": [
+        "toggleHighlight:"
+      ]
+    },
+    {
+      "title": "Inline Code",
+      "key": "k",
+      "action": [
+        "toggleInlineCode:"
+      ]
+    },
+    {
+      "title": "Comment",
+      "key": "/",
+      "action": [
+        "toggleComment:"
+      ]
+    },
+    {
+      "title": "Convert To",
+      "key": null,
+      "action": [
+        "convertToH1:",
+        "convertToH2:",
+        "convertToH3:",
+        "convertToH4:",
+        "convertToH5:",
+        "convertToH6:",
+        "convertToParagraph:"
+      ]
+    },
+    {
+      "title": "Header 1",
+      "key": "1",
+      "action": [
+        "convertToH1:"
+      ]
+    },
+    {
+      "title": "Header 2",
+      "key": "2",
+      "action": [
+        "convertToH2:"
+      ]
+    },
+    {
+      "title": "Header 3",
+      "key": "3",
+      "action": [
+        "convertToH3:"
+      ]
+    },
+    {
+      "title": "Header 4",
+      "key": "4",
+      "action": [
+        "convertToH4:"
+      ]
+    },
+    {
+      "title": "Header 5",
+      "key": "5",
+      "action": [
+        "convertToH5:"
+      ]
+    },
+    {
+      "title": "Header 6",
+      "key": "6",
+      "action": [
+        "convertToH6:"
+      ]
+    },
+    {
+      "title": "Paragraph",
+      "key": "0",
+      "action": [
+        "convertToParagraph:"
+      ]
+    },
+    {
+      "title": "Ordered List",
+      "key": "O",
+      "action": [
+        "toggleOrderedList:"
+      ]
+    },
+    {
+      "title": "Unordered List",
+      "key": "U",
+      "action": [
+        "toggleUnorderedList:"
+      ]
+    },
+    {
+      "title": "Blockquote",
+      "key": "B",
+      "action": [
+        "toggleBlockquote:"
+      ]
+    },
+    {
+      "title": "Shift Right",
+      "key": "]",
+      "action": [
+        "indent:"
+      ]
+    },
+    {
+      "title": "Shift Left",
+      "key": "[",
+      "action": [
+        "unindent:"
+      ]
+    },
+    {
+      "title": "Link",
+      "key": "K",
+      "action": [
+        "toggleLink:"
+      ]
+    },
+    {
+      "title": "Image",
+      "key": "I",
+      "action": [
+        "toggleImage:"
+      ]
+    },
+    {
+      "title": "New Paragraph",
+      "key": null,
+      "action": [
+        "insertNewParagraph:"
+      ]
+    },
+    {
+      "title": "Plug-ins",
+      "key": null,
+      "action": []
+    },
+    {
+      "title": "Window",
+      "key": null,
+      "action": [
+        "performMiniaturize:",
+        "performZoom:",
+        "arrangeInFront:"
+      ]
+    },
+    {
+      "title": "Minimize",
+      "key": "m",
+      "action": [
+        "performMiniaturize:"
+      ]
+    },
+    {
+      "title": "Zoom",
+      "key": "m",
+      "action": [
+        "performZoom:"
+      ]
+    },
+    {
+      "title": "Bring All to Front",
+      "key": null,
+      "action": [
+        "arrangeInFront:"
+      ]
+    },
+    {
+      "title": "Help",
+      "key": null,
+      "action": [
+        "showHelp:",
+        "showContributing:"
+      ]
+    },
+    {
+      "title": "MacDown Help",
+      "key": null,
+      "action": [
+        "showHelp:"
+      ]
+    },
+    {
+      "title": "Contributing to MacDown",
+      "key": null,
+      "action": [
+        "showContributing:"
+      ]
+    }
+  ],
+  "preferences": [
+    {
+      "key": "extensionTables",
+      "section": "MPMarkdownPreferencesViewController",
+      "label": "Table",
+      "control": "button"
+    },
+    {
+      "key": "extensionFencedCode",
+      "section": "MPMarkdownPreferencesViewController",
+      "label": "Fenced code block",
+      "control": "button"
+    },
+    {
+      "key": "extensionStrikethough",
+      "section": "MPMarkdownPreferencesViewController",
+      "label": "Strikethrough",
+      "control": "button"
+    },
+    {
+      "key": "extensionUnderline",
+      "section": "MPMarkdownPreferencesViewController",
+      "label": "Underline",
+      "control": "button"
+    },
+    {
+      "key": "extensionQuote",
+      "section": "MPMarkdownPreferencesViewController",
+      "label": "Quote",
+      "control": "button"
+    },
+    {
+      "key": "extensionIntraEmphasis",
+      "section": "MPMarkdownPreferencesViewController",
+      "label": "Intra-word emphasis",
+      "control": "button"
+    },
+    {
+      "key": "extensionSuperscript",
+      "section": "MPMarkdownPreferencesViewController",
+      "label": "Superscript",
+      "control": "button"
+    },
+    {
+      "key": "extensionHighlight",
+      "section": "MPMarkdownPreferencesViewController",
+      "label": "Highlight",
+      "control": "button"
+    },
+    {
+      "key": "extensionAutolink",
+      "section": "MPMarkdownPreferencesViewController",
+      "label": "Autolink",
+      "control": "button"
+    },
+    {
+      "key": "extensionFootnotes",
+      "section": "MPMarkdownPreferencesViewController",
+      "label": "Footnote",
+      "control": "button"
+    },
+    {
+      "key": "extensionSmartyPants",
+      "section": "MPMarkdownPreferencesViewController",
+      "label": "Smartypants",
+      "control": "button"
+    },
+    {
+      "key": "updateIncludesPreReleases",
+      "section": "MPGeneralPreferencesViewController",
+      "label": "Include pre-releases",
+      "control": "button"
+    },
+    {
+      "key": "markdownManualRender",
+      "section": "MPGeneralPreferencesViewController",
+      "label": "Update preview automatically as you type",
+      "control": "button"
+    },
+    {
+      "key": "editorSyncScrolling",
+      "section": "MPGeneralPreferencesViewController",
+      "label": "Sync preview scrollbar when editor scrolls",
+      "control": "button"
+    },
+    {
+      "key": "editorOnRight",
+      "section": "MPGeneralPreferencesViewController",
+      "label": "Put editor on the right",
+      "control": "button"
+    },
+    {
+      "key": "editorShowWordCount",
+      "section": "MPGeneralPreferencesViewController",
+      "label": "Show word count",
+      "control": "button"
+    },
+    {
+      "key": "supressesUntitledDocumentOnLaunch",
+      "section": "MPGeneralPreferencesViewController",
+      "label": "Ensure open document on launch",
+      "control": "button"
+    },
+    {
+      "key": "createFileForLinkTarget",
+      "section": "MPGeneralPreferencesViewController",
+      "label": "Automatically create files for link targets",
+      "control": "button"
+    },
+    {
+      "key": "editorHorizontalInset",
+      "section": "MPEditorPreferencesViewController",
+      "label": "",
+      "control": "textField"
+    },
+    {
+      "key": "editorVerticalInset",
+      "section": "MPEditorPreferencesViewController",
+      "label": "",
+      "control": "textField"
+    },
+    {
+      "key": "editorHorizontalInset",
+      "section": "MPEditorPreferencesViewController",
+      "label": "",
+      "control": "stepper"
+    },
+    {
+      "key": "editorVerticalInset",
+      "section": "MPEditorPreferencesViewController",
+      "label": "",
+      "control": "stepper"
+    },
+    {
+      "key": "editorLineSpacing",
+      "section": "MPEditorPreferencesViewController",
+      "label": "",
+      "control": "textField"
+    },
+    {
+      "key": "editorLineSpacing",
+      "section": "MPEditorPreferencesViewController",
+      "label": "",
+      "control": "stepper"
+    },
+    {
+      "key": "editorWidthLimited",
+      "section": "MPEditorPreferencesViewController",
+      "label": "Limit editor width to",
+      "control": "button"
+    },
+    {
+      "key": "editorMaximumWidth",
+      "section": "MPEditorPreferencesViewController",
+      "label": "",
+      "control": "textField"
+    },
+    {
+      "key": "editorMaximumWidth",
+      "section": "MPEditorPreferencesViewController",
+      "label": "",
+      "control": "stepper"
+    },
+    {
+      "key": "editorUnorderedListMarkerType",
+      "section": "MPEditorPreferencesViewController",
+      "label": "* (Asterisk)",
+      "control": "popUpButton"
+    },
+    {
+      "key": "editorConvertTabs",
+      "section": "MPEditorPreferencesViewController",
+      "label": "Insert spaces instead of tabs",
+      "control": "button"
+    },
+    {
+      "key": "editorCompleteMatchingCharacters",
+      "section": "MPEditorPreferencesViewController",
+      "label": "Auto-complete matching characters",
+      "control": "button"
+    },
+    {
+      "key": "editorSmartHome",
+      "section": "MPEditorPreferencesViewController",
+      "label": "⌘← jumps to first non-whitespace character in line",
+      "control": "button"
+    },
+    {
+      "key": "editorScrollsPastEnd",
+      "section": "MPEditorPreferencesViewController",
+      "label": "Scroll past end",
+      "control": "button"
+    },
+    {
+      "key": "editorEnsuresNewlineAtEndOfFile",
+      "section": "MPEditorPreferencesViewController",
+      "label": "Ensure newline at end of file on save",
+      "control": "button"
+    },
+    {
+      "key": "editorAutoIncrementNumberedLists",
+      "section": "MPEditorPreferencesViewController",
+      "label": "Auto-increment numbering in ordered lists",
+      "control": "button"
+    },
+    {
+      "key": "editorInsertPrefixInBlock",
+      "section": "MPEditorPreferencesViewController",
+      "label": "Automatically insert line prefix for the current block",
+      "control": "button"
+    },
+    {
+      "key": "htmlDefaultDirectoryUrl",
+      "section": "MPHtmlPreferencesViewController",
+      "label": "",
+      "control": "pathControl"
+    },
+    {
+      "key": "htmlSyntaxHighlighting",
+      "section": "MPHtmlPreferencesViewController",
+      "label": "Syntax highlighted code block",
+      "control": "button"
+    },
+    {
+      "key": "htmlLineNumbers",
+      "section": "MPHtmlPreferencesViewController",
+      "label": "Show line numbers",
+      "control": "button"
+    },
+    {
+      "key": "htmlGraphviz",
+      "section": "MPHtmlPreferencesViewController",
+      "label": "Graphviz",
+      "control": "button"
+    },
+    {
+      "key": "htmlMermaid",
+      "section": "MPHtmlPreferencesViewController",
+      "label": "Mermaid",
+      "control": "button"
+    },
+    {
+      "key": "htmlMathJax",
+      "section": "MPHtmlPreferencesViewController",
+      "label": "TeX-like math syntax",
+      "control": "button"
+    },
+    {
+      "key": "htmlMathJaxInlineDollar",
+      "section": "MPHtmlPreferencesViewController",
+      "label": "Use dollar sign ($) as inline delimiter",
+      "control": "button"
+    },
+    {
+      "key": "htmlTaskList",
+      "section": "MPHtmlPreferencesViewController",
+      "label": "Task list syntax",
+      "control": "button"
+    },
+    {
+      "key": "htmlDetectFrontMatter",
+      "section": "MPHtmlPreferencesViewController",
+      "label": "Detect Jekyll front-matter",
+      "control": "button"
+    },
+    {
+      "key": "htmlRendersTOC",
+      "section": "MPHtmlPreferencesViewController",
+      "label": "Detect table of contents token",
+      "control": "button"
+    },
+    {
+      "key": "htmlHardWrap",
+      "section": "MPHtmlPreferencesViewController",
+      "label": "Render newline literally",
+      "control": "button"
+    },
+    {
+      "key": "previewZoomRelativeToBaseFontSize",
+      "section": "MPHtmlPreferencesViewController",
+      "label": "Scale preview based on editor font size",
+      "control": "button"
+    },
+    {
+      "key": "htmlCodeBlockAccessory",
+      "section": "MPHtmlPreferencesViewController",
+      "label": "None",
+      "control": "popUpButtonCell"
+    }
+  ]
+}

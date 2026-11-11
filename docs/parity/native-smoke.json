@@ -1,0 +1,23 @@
+{
+  "checks": {
+    "diagrams": true,
+    "heading": true,
+    "highlight": true,
+    "ipc": true,
+    "nativeDocument": true
+  },
+  "passed": true,
+  "pdf": true,
+  "pdfSummary": {
+    "containsEnd": true,
+    "height": 842.0,
+    "pages": 7,
+    "width": 595.0
+  },
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)",
+  "draftRecovery": true,
+  "savedOnDisk": true,
+  "pdfOnDisk": true,
+  "pluginProtocol": true,
+  "pagination": true
+}
