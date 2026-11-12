@@ -2,7 +2,7 @@
 """Run the real macOS app against an isolated document/config directory."""
 import json, os, pathlib, plistlib, subprocess, tempfile
 root = pathlib.Path(__file__).resolve().parents[1]
-app = root / 'target/aarch64-apple-darwin/release/bundle/macos/MacDown Rust.app/Contents/MacOS/macdown-rust'
+app = root / 'target/aarch64-apple-darwin/release/bundle/macos/MacDownPlus.app/Contents/MacOS/macdownplus'
 with tempfile.TemporaryDirectory(prefix='macdown-native-') as folder:
     directory = pathlib.Path(folder)
     bundle=directory/'PlugIns/Smoke.bundle/Contents'
@@ -23,6 +23,8 @@ with tempfile.TemporaryDirectory(prefix='macdown-native-') as folder:
         raise SystemExit(f'No native report. Exit={run.returncode}\n{run.stdout}\n{run.stderr}')
     results = json.loads(report.read_text())
     if not results.get('passed'): print(run.stdout, run.stderr)
+    results['draftsCleaned']=not list(drafts.glob('*.json'))
+    results['printFilesCleaned']=not list(directory.glob('print-*.html'))
     results['draftRecovery']='RECOVERED DRAFT' in fixture.read_text() and not (drafts/'doc-7.json').exists()
     results['savedOnDisk'] = 'Saved from WKWebView.' in fixture.read_text()
     pdf = directory/'preview.pdf'
@@ -32,4 +34,4 @@ with tempfile.TemporaryDirectory(prefix='macdown-native-') as folder:
     print(json.dumps(results, indent=2, ensure_ascii=False))
     output = root/'docs/parity/native-smoke.json'
     output.write_text(json.dumps(results, indent=2, ensure_ascii=False)+'\n')
-    raise SystemExit(0 if results.get('passed') and results['savedOnDisk'] and results['pdfOnDisk'] and results['pluginProtocol'] and results['pagination'] and results['draftRecovery'] else 1)
+    raise SystemExit(0 if results.get('passed') and results['savedOnDisk'] and results['pdfOnDisk'] and results['pluginProtocol'] and results['pagination'] and results['draftRecovery'] and results['printFilesCleaned'] and results['draftsCleaned'] else 1)

@@ -2126,8 +2126,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "macdown-rust"
-version = "0.1.0"
+name = "macdownplus"
+version = "0.1.1"
 dependencies = [
  "block2",
  "handlebars",
@@ -2140,6 +2140,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
+ "sha2",
  "tauri",
  "tauri-build",
  "tauri-plugin-dialog",

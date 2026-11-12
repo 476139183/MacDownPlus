@@ -75,7 +75,13 @@ async function setup(page: Page, text = "# Hello\n\nText", preferences = {}) {
         if (cmd === "plugin:event|unlisten") return Promise.resolve();
         w.__calls.push({ cmd, args });
         if (cmd === "save_document") w.__saving = true;
-        return w.testInvoke(cmd, args);
+        const result = w.testInvoke(cmd, args);
+        return cmd === "save_document"
+          ? Promise.resolve(result).then((value) => {
+              w.__saveFinished = true;
+              return value;
+            })
+          : result;
       },
     };
     w.__TAURI_EVENT_PLUGIN_INTERNALS__ = { unregisterListener: () => {} };
@@ -109,6 +115,75 @@ test("default layout and formatting match the split editor", async ({
   await expect(page.locator("#preview")).toBeHidden();
   await menu(page, "setEqualSplit");
   await expect(page.locator("#preview")).toBeVisible();
+});
+
+test("save-and-close retains edits made while the save is pending", async ({
+  page,
+}) => {
+  await setup(page);
+  await page.locator(".cm-content").click();
+  await page.keyboard.press("Meta+End");
+  await page.keyboard.type(" unsaved");
+  await page.evaluate(() => (window as any).testInvoke("test_delay", {}));
+  await menu(page, "performClose");
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await page.waitForFunction(() => (window as any).__saving);
+  await page.locator(".cm-content").click();
+  await page.keyboard.press("Meta+End");
+  await page.keyboard.type(" later edit");
+  await page.waitForFunction(() => (window as any).__saveFinished);
+  await expect(page.locator(".cm-content")).toContainText("later edit");
+  expect(
+    await page.evaluate(() =>
+      (window as any).__calls.some(
+        (call: any) => call.cmd === "close_document",
+      ),
+    ),
+  ).toBe(false);
+});
+
+test("overlapping Copy HTML actions both complete", async ({ page }) => {
+  await setup(page);
+  await page.evaluate(() => {
+    (window as any).__copied = [];
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        writeText: async (text: string) => {
+          (window as any).__copied.push(text);
+        },
+      },
+    });
+    (window as any).menu("copyHtml");
+    (window as any).menu("copyHtml");
+  });
+  await page.waitForFunction(() => (window as any).__copied.length === 2);
+  expect(
+    await page.evaluate(
+      () => (window as any).__copied[0] === (window as any).__copied[1],
+    ),
+  ).toBe(true);
+});
+
+test("application actions remain available while Preferences has focus", async ({
+  page,
+}) => {
+  await setup(page);
+  await page.goto("/?preferences");
+  await expect(
+    page.getByRole("button", { name: "General", exact: true }),
+  ).toBeVisible();
+  await menu(page, "orderFrontStandardAboutPanel");
+  await expect(page.getByRole("dialog")).toContainText("MacDownPlus");
+  await page.getByRole("button", { name: "Close", exact: true }).click();
+  await menu(page, "showHelp");
+  await page.waitForFunction(() =>
+    (window as any).__calls.some((call: any) => call.cmd === "show_help"),
+  );
+  await menu(page, "runPageLayout");
+  await page.waitForFunction(() =>
+    (window as any).__calls.some((call: any) => call.cmd === "page_setup"),
+  );
 });
 test("cancel close preserves edits; edits during save remain unsaved", async ({
   page,

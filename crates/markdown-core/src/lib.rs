@@ -303,6 +303,9 @@ impl DocumentSession {
             saved_text,
         }
     }
+    pub fn saved_text(&self) -> &str {
+        &self.saved_text
+    }
     pub fn current_path(&self) -> Option<&Path> {
         self.path.as_deref()
     }

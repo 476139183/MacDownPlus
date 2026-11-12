@@ -1,4 +1,4 @@
-# MacDown Rust
+# MacDownPlus
 
 使用 **Rust + Tauri 2 + TypeScript / CodeMirror 6** 重写 MacDown，优先支持 Apple Silicon（包括 M4）原生运行。功能对齐原版 MacDown；兼容基线、验证记录和尚未验证的系统行为见 [兼容清单](docs/parity/README.md)。
 
@@ -22,7 +22,7 @@ rustup target add aarch64-apple-darwin
 CI=true npm run build:mac
 ```
 
-产物：`target/aarch64-apple-darwin/release/bundle/macos/MacDown Rust.app` 和 `bundle/dmg/*.dmg`。CI 模式只跳过 Finder 对安装磁盘窗口的自动排版。
+产物：`target/aarch64-apple-darwin/release/bundle/macos/MacDownPlus.app` 和 `bundle/dmg/*.dmg`。CI 模式只跳过 Finder 对安装磁盘窗口的自动排版。
 
 本地构建不包含 Developer ID 签名与 Apple 公证。最低系统版本是构建配置，并不等于已经在每个 macOS 版本上完成实机验证。
 
@@ -40,17 +40,19 @@ CI=true npm run build:mac
 ## 测试
 
 ```sh
-cargo test -p macdown-core
+cargo test --workspace
 npm run test:ui
 ```
 
+系统文件打开回归：`python3 scripts/test-open-events.py`。审查结论见 [架构 review](docs/reviews/2026-11-12-architecture-review.md)。
+
 UI 测试需要本机 Google Chrome，使用真实 Rust 渲染器，文件选择对话框通过 IPC 测试替身覆盖；它不能代替原生对话框的人工验收。原生自检由 `scripts/native-smoke.py` 在隔离目录中运行实际 arm64 应用，检查 WKWebView、文件保存、Prism、Mermaid、Graphviz、原生插件协议及 PDF 长文分页。
 
-通过偏好设置的 Terminal 页安装 `macdown-rust` 到 PATH 中的目录后：
+通过偏好设置的 Terminal 页安装 `macdownplus` 到 PATH 中的目录后：
 
 ```sh
-macdown-rust README.md
-cat README.md | macdown-rust -
+macdownplus README.md
+cat README.md | macdownplus -
 ```
 
 许可：新实现为 MIT；复用资源遵循各自原始许可证。

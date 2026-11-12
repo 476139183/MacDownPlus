@@ -1,3 +1,5 @@
+import { applicationActions, applicationAction } from "./application";
+import { notify } from "./dialogs";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import type { Preferences } from "./renderer";
@@ -103,6 +105,10 @@ export async function preferencesUI() {
   }>("bootstrap");
   let prefs = boot.preferences,
     tab = "General";
+  await listen<string>("menu-action", (event) => {
+    if (applicationActions.has(event.payload))
+      void applicationAction(event.payload, prefs).catch(notify);
+  });
   document.body.classList.add("preferences");
   const app = document.querySelector<HTMLDivElement>("#app")!;
   app.innerHTML =
@@ -133,7 +139,7 @@ export async function preferencesUI() {
       const p = document.createElement("p");
       p.className = "pref-note";
       p.textContent =
-        "Open documents from Terminal: macdown-rust README.md\nRead standard input: cat README.md | macdown-rust -\nInstall into a directory included in your PATH. The tool launches this copy of the application.";
+        "Open documents from Terminal: macdownplus README.md\nRead standard input: cat README.md | macdownplus -\nInstall into a directory included in your PATH. The tool launches this copy of the application.";
       p.style.whiteSpace = "pre-line";
       const b = document.createElement("button");
       b.textContent = "Install Command Line Tool…";

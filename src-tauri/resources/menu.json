@@ -1,13 +1,13 @@
 [
   {
     "id": "1Xt-HY-uBw",
-    "title": "MacDown Rust",
+    "title": "MacDownPlus",
     "action": "",
     "shortcut": "",
     "children": [
       {
         "id": "5kV-Vb-QxS",
-        "title": "About MacDown Rust",
+        "title": "About MacDownPlus",
         "action": "orderFrontStandardAboutPanel",
         "shortcut": ""
       },
@@ -41,7 +41,7 @@
       },
       {
         "id": "Olw-nP-bQN",
-        "title": "Hide MacDown Rust",
+        "title": "Hide MacDownPlus",
         "action": "hide",
         "shortcut": "CmdOrCtrl+H"
       },
@@ -62,7 +62,7 @@
       },
       {
         "id": "4sb-4s-VLi",
-        "title": "Quit MacDown Rust",
+        "title": "Quit MacDownPlus",
         "action": "terminate",
         "shortcut": "CmdOrCtrl+Q"
       }
@@ -679,13 +679,13 @@
     "children": [
       {
         "id": "ugx-EN-xKu",
-        "title": "MacDown Rust Help",
+        "title": "MacDownPlus Help",
         "action": "showHelp",
         "shortcut": ""
       },
       {
         "id": "K3J-v5-s91",
-        "title": "Contributing to MacDown Rust",
+        "title": "Contributing to MacDownPlus",
         "action": "showContributing",
         "shortcut": ""
       }

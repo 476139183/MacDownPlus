@@ -35,10 +35,21 @@
 
 2026-11-11，本机 Apple M3 Pro / macOS 27.0：
 
-- 13 项 Rust 核心测试通过。
-- 7 项 Playwright 页面交互测试通过，其中一项覆盖 21 种格式菜单。
+- 13 项 Rust 核心测试通过；另有 3 项应用启动/关闭/退出状态单测通过。
+- 11 项 Playwright 页面交互测试通过，其中一项覆盖 21 种格式菜单。
 - 原生 arm64 应用自检通过：WKWebView、文件保存、Prism、Mermaid、Graphviz、原生插件公开协议。
 - 长文 PDF 导出为 7 页，纸张 595 × 842 pt，末尾 `END OF DOCUMENT` 可从 PDFKit 提取。
 - APP 和 DMG 均已生成；未配置 Developer ID 或 Apple 公证。
 
 真实结果：[native-smoke.json](native-smoke.json)。浏览器 UA 出于 WebKit 兼容性显示 Intel 字样，CPU 架构以 Mach-O `file` 检查为准。
+
+
+## 0.1.1：2026-11-12 架构回归
+
+- 应用、仓库、本地目录和 CLI 名称统一为 MacDownPlus/macdownplus，保留配置身份。
+- LaunchServices 冷启动/热启动打开中文及空格路径通过；用户实际文档只读测试，内容摘要不变。
+- 11 项页面测试通过，包括保存期间新输入、重叠 Copy HTML、预览换代和 Preferences 全局菜单。
+- 3 项应用状态测试与 13 项核心测试通过。
+- 真实 arm64 应用验证恢复、回退及草稿清理；7 页 A4 PDF 及文末完整性、插件公开协议、打印临时文件清理均通过。
+- app 完整本地 ad-hoc 签名并校验；未进行 Developer ID 签名或 Apple 公证。
+- 深度 review 结论：[架构审查报告](../reviews/2026-11-12-architecture-review.md)。

@@ -97,7 +97,7 @@ pub fn run_plugin(app: &AppHandle, path: std::path::PathBuf) {
             let plugin=PLUGINS.with(|plugins|->Result<Retained<AnyObject>,String>{
                 let mut plugins=plugins.borrow_mut();if let Some(plugin)=plugins.get(&path){return Ok(plugin.clone());}
                 let bundle=NSBundle::bundleWithPath(&NSString::from_str(&path.to_string_lossy())).ok_or("插件不是有效的 macOS bundle")?;
-                bundle.loadAndReturnError().map_err(|e|format!("插件加载失败（请检查 arm64 架构）: {e}"))?;
+                bundle.loadAndReturnError().map_err(|e|format!("插件加载失败: {e}"))?;
                 let class=bundle.principalClass().ok_or("插件没有 principal class")?;
                 let allocated:*mut AnyObject=msg_send![class,alloc];let initialized:*mut AnyObject=msg_send![allocated,init];let object=Retained::from_raw(initialized).ok_or("插件初始化失败")?;
                 let responds:Bool=msg_send![&*object,respondsToSelector:sel!(plugInDidInitialize)];if responds.as_bool(){let _:()=msg_send![&*object,plugInDidInitialize];}

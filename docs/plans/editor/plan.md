@@ -1,4 +1,4 @@
-# MacDown Rust 实现计划
+# MacDownPlus 实现计划
 
 > 设计依据：[design.md](design.md)。按当前会话继续执行已授权的新仓库实现。
 
@@ -60,7 +60,7 @@ steps:
 verify:
   - command: npm run build:mac
     expect: arm64 app 与 DMG 生成
-  - command: file target/aarch64-apple-darwin/release/macdown-rust
+  - command: file target/aarch64-apple-darwin/release/macdownplus
     expect: Mach-O 64-bit executable arm64
 ```
 

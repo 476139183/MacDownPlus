@@ -4,7 +4,8 @@
     "heading": true,
     "highlight": true,
     "ipc": true,
-    "nativeDocument": true
+    "nativeDocument": true,
+    "revert": true
   },
   "passed": true,
   "pdf": true,
@@ -15,6 +16,8 @@
     "width": 595.0
   },
   "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)",
+  "draftsCleaned": true,
+  "printFilesCleaned": true,
   "draftRecovery": true,
   "savedOnDisk": true,
   "pdfOnDisk": true,

@@ -1,4 +1,4 @@
-# MacDown Rust 设计
+# MacDownPlus 设计
 
 ## 1. 决策表
 | ID | 决策点 | 候选 | 选定 | Why |

@@ -1,4 +1,4 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 fn main() {
-    macdown_rust_lib::run();
+    macdownplus_lib::run();
 }

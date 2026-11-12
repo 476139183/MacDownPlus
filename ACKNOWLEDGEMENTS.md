@@ -1,6 +1,6 @@
 # Acknowledgements
 
-MacDown Rust is an independent Rust + Tauri implementation of the MacDown editor experience.
+MacDownPlus is an independent Rust + Tauri implementation of the MacDown editor experience.
 
 We thank **Tzu-ping Chung and the MacDown contributors** for [MacDown](https://github.com/MacDownApp/macdown), the reference for editor behavior, menus and preferences. The frozen compatibility reference is commit `3e2a2bf101c215c143bf00d9f857965f0ee82487`.
 
@@ -12,4 +12,4 @@ This project reuses MacDown's Hoedown rendering patches, editor themes, preview 
 - MathJax 2.7.3: loaded from the original generation of CDN distribution when enabled; requires network access. See MathJax's Apache 2.0 notice.
 - Rust, Tauri, CodeMirror, Vite and their dependency contributors. Their respective licenses apply to their components.
 
-MacDown Rust is not an official release of MacDown and does not use MacDown's application icon or update feed.
+MacDownPlus is not an official release of MacDown and does not use MacDown's application icon or update feed.

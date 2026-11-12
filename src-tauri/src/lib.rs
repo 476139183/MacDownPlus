@@ -1,3 +1,5 @@
+mod documents;
+mod lifecycle;
 mod menu;
 mod native;
 mod pdf;
@@ -6,7 +8,7 @@ use macdown_core::{atomic_write, DocumentInfo, DocumentSession, Preferences, Ren
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::{
-    collections::{BTreeMap, HashMap, VecDeque},
+    collections::{BTreeMap, HashMap},
     fs,
     path::{Path, PathBuf},
     sync::{
@@ -18,20 +20,7 @@ use tauri::{AppHandle, Emitter, Manager, State, WebviewUrl, WebviewWindow, Webvi
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_opener::OpenerExt;
 
-struct Document {
-    session: DocumentSession,
-    text: String,
-    dirty: bool,
-}
-impl Default for Document {
-    fn default() -> Self {
-        Self {
-            session: DocumentSession::default(),
-            text: String::new(),
-            dirty: false,
-        }
-    }
-}
+use documents::{Document, QuitReview};
 pub struct AppState {
     docs: Mutex<HashMap<String, Document>>,
     preferences: Mutex<Preferences>,
@@ -39,7 +28,7 @@ pub struct AppState {
     directory: PathBuf,
     drafts: PathBuf,
     serial: AtomicUsize,
-    quit: Mutex<Option<VecDeque<String>>>,
+    quit: Mutex<Option<QuitReview>>,
     exit: AtomicBool,
     speech: Mutex<Option<std::process::Child>>,
 }
@@ -98,7 +87,7 @@ fn recent(app: &AppHandle, path: &Path) {
 fn info(window: &WebviewWindow, state: &AppState) -> Value {
     let mut docs = state.docs.lock().unwrap();
     let doc = docs.entry(window.label().into()).or_default();
-    json!({"document":doc.session.info(),"text":doc.text,"dirty":doc.dirty})
+    json!({"document":doc.session.info(),"text":doc.text,"dirty":doc.dirty()})
 }
 fn window_for(app: &AppHandle, label: &str) -> Result<WebviewWindow, String> {
     app.get_webview_window(label)
@@ -108,6 +97,7 @@ fn create_window(app: &AppHandle, document: Document) -> Result<WebviewWindow, S
     let state = app.state::<AppState>();
     let id = format!("doc-{}", state.serial.fetch_add(1, Ordering::SeqCst));
     let name = document.session.info().name;
+    persist_draft(&state, &id, &document)?;
     state.docs.lock().unwrap().insert(id.clone(), document);
     match WebviewWindowBuilder::new(app, &id, WebviewUrl::App("index.html".into()))
         .title(name)
@@ -123,22 +113,47 @@ fn create_window(app: &AppHandle, document: Document) -> Result<WebviewWindow, S
     }
 }
 fn open_path(app: &AppHandle, path: &Path) -> Result<(), String> {
+    if let Some(path) = app
+        .state::<lifecycle::OpenRequests>()
+        .submit(path.to_path_buf())
+    {
+        dispatch_open(app, path)?;
+    }
+    Ok(())
+}
+fn dispatch_open(app: &AppHandle, path: PathBuf) -> Result<(), String> {
+    let handle = app.clone();
+    app.run_on_main_thread(move || {
+        if let Err(error) = open_document_now(&handle, &path) {
+            let message = format!("无法打开 {}：{error}", path.display());
+            eprintln!("{message}");
+            let _ = handle.emit("app-error", &message);
+            handle
+                .dialog()
+                .message(message)
+                .title("打开文档失败")
+                .show(|_| {});
+        }
+    })
+    .map_err(|e| e.to_string())
+}
+fn open_document_now(app: &AppHandle, path: &Path) -> Result<(), String> {
     let state = app.state::<AppState>();
-    if path.parent() == Some(std::env::temp_dir().join("MacDown-Rust-stdin").as_path()) {
+    if path.parent() == Some(std::env::temp_dir().join("MacDownPlus-stdin").as_path()) {
         let text = fs::read_to_string(path).map_err(|e| e.to_string())?;
         let reuse = state
             .docs
             .lock()
             .unwrap()
             .iter()
-            .find(|(_, d)| d.session.current_path().is_none() && d.text.is_empty() && !d.dirty)
+            .find(|(_, d)| d.session.current_path().is_none() && d.text.is_empty() && !d.dirty())
             .map(|(k, _)| k.clone());
         let doc = Document {
             session: DocumentSession::default(),
             text,
-            dirty: true,
         };
         if let Some(label) = reuse {
+            persist_draft(&state, &label, &doc)?;
             state.docs.lock().unwrap().insert(label.clone(), doc);
             let window = window_for(app, &label)?;
             native::document(&window, "", true);
@@ -169,14 +184,14 @@ fn open_path(app: &AppHandle, path: &Path) -> Result<(), String> {
         .lock()
         .unwrap()
         .iter()
-        .find(|(_, d)| d.session.current_path().is_none() && d.text.is_empty() && !d.dirty)
+        .find(|(_, d)| d.session.current_path().is_none() && d.text.is_empty() && !d.dirty())
         .map(|(k, _)| k.clone());
     let document = Document {
         session,
         text: loaded.content.clone(),
-        dirty: false,
     };
     if let Some(id) = reuse {
+        persist_draft(&state, &id, &document)?;
         state.docs.lock().unwrap().insert(id.clone(), document);
         let w = window_for(app, &id)?;
         let _ = w.set_title(&loaded.name);
@@ -193,37 +208,40 @@ fn open_path(app: &AppHandle, path: &Path) -> Result<(), String> {
 }
 fn start_quit(app: &AppHandle) {
     let state = app.state::<AppState>();
-    let mut quit = state.quit.lock().unwrap();
-    if quit.is_some() {
+    let mut review = state.quit.lock().unwrap();
+    if review.is_some() {
         return;
     }
-    *quit = Some(state.docs.lock().unwrap().keys().cloned().collect());
-    drop(quit);
+    *review = Some(QuitReview::default());
+    drop(review);
     continue_quit(app);
 }
 fn continue_quit(app: &AppHandle) {
     let state = app.state::<AppState>();
+    let mut documents: Vec<_> = state
+        .docs
+        .lock()
+        .unwrap()
+        .iter()
+        .map(|(label, doc)| (label.clone(), doc.text.clone()))
+        .collect();
+    documents.sort_by(|a, b| a.0.cmp(&b.0));
     let next = state
         .quit
         .lock()
         .unwrap()
-        .as_ref()
-        .and_then(|q| q.front().cloned());
+        .as_mut()
+        .and_then(|review| review.next(&documents));
     if let Some(label) = next {
-        if let Some(w) = app.get_webview_window(&label) {
-            let _ = w.set_focus();
-            let _ = w.emit("menu-action", "quit-confirm");
-        } else {
-            if let Some(q) = state.quit.lock().unwrap().as_mut() {
-                q.pop_front();
-            }
-            continue_quit(app);
+        if let Some(window) = app.get_webview_window(&label) {
+            let _ = window.set_focus();
+            let _ = window.emit("menu-action", "quit-confirm");
         }
     } else {
         state.exit.store(true, Ordering::SeqCst);
         if let Ok(entries) = fs::read_dir(&state.drafts) {
-            for e in entries.flatten() {
-                let _ = fs::remove_file(e.path());
+            for entry in entries.flatten() {
+                let _ = fs::remove_file(entry.path());
             }
         }
         app.exit(0);
@@ -241,6 +259,7 @@ fn bootstrap(window: WebviewWindow, state: State<AppState>) -> Value {
     };
     result["selfTest"] =
         json!(window.label() == "main" && std::env::var_os("MACDOWN_TEST_DIR").is_some());
+    result["openTest"] = json!(std::env::var_os("MACDOWN_OPEN_TEST_DIR").is_some());
     result["preferences"] = serde_json::to_value(&*state.preferences.lock().unwrap()).unwrap();
     result["resources"] = json!({"Styles":resource_names(&state,"Styles"),"Themes":resource_names(&state,"Themes"),"Templates":resource_names(&state,"Templates")});
     result
@@ -341,52 +360,88 @@ async fn save_document(
     let mut docs = state.docs.lock().unwrap();
     let doc = docs.get_mut(window.label()).ok_or("文档已关闭")?;
     let result = doc.session.save(&path, &content)?;
-    doc.dirty = doc.text != content;
-    let dirty = doc.dirty;
+    let dirty = doc.dirty();
     drop(docs);
     recent(&app, &path);
     native::document(&window, &result.path, dirty);
     let _ = window.set_title(&result.name);
     Ok(Some(result))
 }
+fn persist_draft(state: &AppState, label: &str, doc: &Document) -> Result<(), String> {
+    let path = state.drafts.join(format!("{label}.json"));
+    if doc.dirty() {
+        let draft = Draft {
+            path: doc.session.current_path().map(Path::to_path_buf),
+            saved: doc.session.saved_text().into(),
+            text: doc.text.clone(),
+        };
+        atomic_write(
+            &path,
+            &serde_json::to_vec(&draft).map_err(|e| e.to_string())?,
+        )?;
+    } else if path.exists() {
+        fs::remove_file(path).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
 #[tauri::command]
 fn update_document(
     window: WebviewWindow,
     state: State<AppState>,
     text: String,
-    dirty: bool,
 ) -> Result<(), String> {
     let mut docs = state.docs.lock().unwrap();
     let doc = docs.get_mut(window.label()).ok_or("文档已关闭")?;
-    doc.text = text.clone();
-    doc.dirty = dirty;
-    let loaded = doc.session.info();
-    let draft = Draft {
-        path: doc.session.current_path().map(Path::to_path_buf),
-        saved: loaded.content,
-        text,
-    };
+    doc.text = text;
+    persist_draft(&state, window.label(), doc)?;
+    let info = doc.session.info();
+    let dirty = doc.dirty();
     drop(docs);
-    let path = state.drafts.join(format!("{}.json", window.label()));
-    if dirty {
-        atomic_write(
-            &path,
-            serde_json::to_vec(&draft)
-                .map_err(|e| e.to_string())?
-                .as_slice(),
-        )?;
-    } else if path.exists() {
-        fs::remove_file(path).map_err(|e| e.to_string())?;
-    }
-    native::document(&window, &loaded.path, dirty);
+    native::document(&window, &info.path, dirty);
     Ok(())
 }
 #[tauri::command]
-fn mark_document(window: WebviewWindow, state: State<AppState>, text: String, dirty: bool) {
+fn mark_document(window: WebviewWindow, state: State<AppState>, text: String) {
     if let Some(doc) = state.docs.lock().unwrap().get_mut(window.label()) {
         doc.text = text;
-        doc.dirty = dirty;
     }
+}
+#[tauri::command]
+fn open_test_ready(window: WebviewWindow) -> Result<(), String> {
+    let Some(dir) = std::env::var_os("MACDOWN_OPEN_TEST_DIR") else {
+        return Ok(());
+    };
+    atomic_write(
+        &PathBuf::from(dir).join("ready.json"),
+        serde_json::to_vec(&json!({"pid":std::process::id(),"window":window.label()}))
+            .unwrap()
+            .as_slice(),
+    )
+}
+#[tauri::command]
+fn open_test_report(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<AppState>,
+    content: String,
+    preview: bool,
+) -> Result<(), String> {
+    use sha2::{Digest, Sha256};
+    let dir = std::env::var_os("MACDOWN_OPEN_TEST_DIR").ok_or("非测试运行")?;
+    let docs = state.docs.lock().unwrap();
+    let doc = docs.get(window.label()).ok_or("文档已关闭")?;
+    let info = doc.session.info();
+    let bytes = fs::read(&info.path).map_err(|e| e.to_string())?;
+    let title = window.title().unwrap_or_default();
+    let report = json!({"passed":preview&&bytes==content.as_bytes()&&title==info.name,"sha256":format!("{:x}",Sha256::digest(&bytes)),"windowTitle":title,"preview":preview,"pid":std::process::id()});
+    atomic_write(
+        &PathBuf::from(dir).join("report.json"),
+        &serde_json::to_vec_pretty(&report).unwrap(),
+    )?;
+    drop(docs);
+    state.exit.store(true, Ordering::SeqCst);
+    app.exit(0);
+    Ok(())
 }
 #[tauri::command]
 fn self_test_report(
@@ -485,16 +540,27 @@ fn revert_document(window: WebviewWindow, state: State<AppState>) -> Result<Valu
     let doc = docs.get_mut(window.label()).unwrap();
     let loaded = doc.session.open(&path)?;
     doc.text = loaded.content;
-    doc.dirty = false;
+    persist_draft(&state, window.label(), doc)?;
     drop(docs);
     native::document(&window, &path.to_string_lossy(), false);
     Ok(info(&window, &state))
 }
 #[tauri::command]
-fn close_document(window: WebviewWindow, state: State<AppState>) -> Result<(), String> {
-    state.docs.lock().unwrap().remove(window.label());
-    let path = state.drafts.join(format!("{}.json", window.label()));
-    let _ = fs::remove_file(path);
+fn close_document(
+    window: WebviewWindow,
+    state: State<AppState>,
+    approved_text: String,
+) -> Result<(), String> {
+    let mut docs = state.docs.lock().unwrap();
+    if !docs
+        .get(window.label())
+        .is_some_and(|doc| doc.allows_close(&approved_text))
+    {
+        return Err("文档又有新修改，已保留窗口，请重新确认关闭。".into());
+    }
+    docs.remove(window.label());
+    drop(docs);
+    let _ = fs::remove_file(state.drafts.join(format!("{}.json", window.label())));
     window.destroy().map_err(|e| e.to_string())
 }
 #[tauri::command]
@@ -502,13 +568,27 @@ fn request_quit(app: AppHandle) {
     start_quit(&app)
 }
 #[tauri::command]
-fn confirm_quit(app: AppHandle, state: State<AppState>, approved: bool) {
+fn confirm_quit(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<AppState>,
+    approved: bool,
+    approved_text: String,
+) {
     if !approved {
         *state.quit.lock().unwrap() = None;
         return;
     }
-    if let Some(q) = state.quit.lock().unwrap().as_mut() {
-        q.pop_front();
+    let matches = state
+        .docs
+        .lock()
+        .unwrap()
+        .get(window.label())
+        .is_some_and(|doc| doc.allows_close(&approved_text));
+    if matches {
+        if let Some(review) = state.quit.lock().unwrap().as_mut() {
+            review.confirm(window.label(), approved_text);
+        }
     }
     continue_quit(&app)
 }
@@ -612,6 +692,14 @@ async fn choose_directory(app: AppHandle) -> Result<Option<String>, String> {
         })
         .transpose()
 }
+fn cleanup_print(app: &AppHandle, label: &str) {
+    if !label.starts_with("print-") {
+        return;
+    }
+    if let Some(state) = app.try_state::<AppState>() {
+        let _ = fs::remove_file(state.directory.join(format!("{label}.html")));
+    }
+}
 #[tauri::command]
 async fn print_document(
     app: AppHandle,
@@ -653,7 +741,7 @@ async fn print_document(
     atomic_write(&file, plain.as_bytes())?;
     let source = window.label().to_owned();
     let file_url = url::Url::from_file_path(&file).map_err(|_| "打印文件地址无效")?;
-    WebviewWindowBuilder::new(&app, &id, WebviewUrl::External(file_url))
+    let result = WebviewWindowBuilder::new(&app, &id, WebviewUrl::External(file_url))
         .visible(false)
         .inner_size(800.0, 900.0)
         .on_page_load(move |w, p| {
@@ -672,8 +760,11 @@ async fn print_document(
                 });
             }
         })
-        .build()
-        .map_err(|e| e.to_string())?;
+        .build();
+    if let Err(error) = result {
+        cleanup_print(&app, &id);
+        return Err(error.to_string());
+    }
     Ok(())
 }
 #[tauri::command]
@@ -714,7 +805,7 @@ async fn install_cli(app: AppHandle) -> Result<Option<String>, String> {
     let path = folder
         .into_path()
         .map_err(|e| e.to_string())?
-        .join("macdown-rust");
+        .join("macdownplus");
     let executable = std::env::current_exe().map_err(|e| e.to_string())?;
     let script = format!(
         "#!/bin/sh\nexec '{}' \"$@\"\n",
@@ -806,23 +897,162 @@ fn route(app: &AppHandle, action: &str) {
         }
     }
 }
+fn setup_app(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+    let test_dir = std::env::var_os("MACDOWN_TEST_DIR")
+        .or_else(|| std::env::var_os("MACDOWN_OPEN_TEST_DIR"))
+        .map(PathBuf::from);
+    let directory = test_dir.clone().unwrap_or(app.path().app_config_dir()?);
+    let drafts = test_dir
+        .map(|p| p.join("Drafts"))
+        .unwrap_or(app.path().app_cache_dir()?.join("Drafts"));
+    fs::create_dir_all(&directory)?;
+    fs::create_dir_all(&drafts)?;
+    // These files are owned by completed/aborted print jobs, never user documents.
+    for entry in fs::read_dir(&directory)?.flatten() {
+        let name = entry.file_name().to_string_lossy().into_owned();
+        if name
+            .strip_prefix("print-")
+            .and_then(|name| name.strip_suffix(".html"))
+            .and_then(|name| name.parse::<usize>().ok())
+            .is_some()
+        {
+            let _ = fs::remove_file(entry.path());
+        }
+    }
+    for kind in ["Styles", "Themes", "Templates", "PlugIns"] {
+        fs::create_dir_all(directory.join(kind))?;
+    }
+    for (kind, name, content) in RESOURCES {
+        let ext = match *kind {
+            "Styles" => "css",
+            "Templates" => "handlebars",
+            _ => "style",
+        };
+        let path = directory.join(kind).join(format!("{name}.{ext}"));
+        if !path.exists() {
+            fs::write(path, content)?;
+        }
+    }
+    let mut prefs = Preferences::default();
+    if let Ok(text) = fs::read_to_string(directory.join("preferences.json")) {
+        if let Ok(values) = serde_json::from_str(&text) {
+            let _ = prefs.merge(values);
+        }
+    }
+    if prefs.text("htmlDefaultDirectoryUrl").is_empty() {
+        if let Ok(home) = app.path().home_dir() {
+            let _ = prefs.set("htmlDefaultDirectoryUrl", json!(home.to_string_lossy()));
+        }
+    }
+    let recents = fs::read_to_string(directory.join("recents.json"))
+        .ok()
+        .and_then(|v| serde_json::from_str::<Vec<String>>(&v).ok())
+        .unwrap_or_default();
+    let mut docs = HashMap::new();
+    docs.insert("main".into(), Document::default());
+    app.manage(AppState {
+        docs: Mutex::new(docs),
+        preferences: Mutex::new(prefs),
+        recents: Mutex::new(recents),
+        directory,
+        drafts,
+        serial: AtomicUsize::new(1),
+        quit: Mutex::new(None),
+        exit: AtomicBool::new(false),
+        speech: Mutex::new(None),
+    });
+    let handle = app.handle().clone();
+    menu::rebuild(&handle)?;
+    if let Some(dir) = std::env::var_os("MACDOWN_TEST_DIR") {
+        let plugin = PathBuf::from(dir).join("PlugIns/Smoke.bundle");
+        if plugin.exists() {
+            native::run_plugin(&handle, plugin);
+        }
+    }
+    let state = app.state::<AppState>();
+    let mut recover = Vec::new();
+    let mut old_drafts = Vec::new();
+    for entry in fs::read_dir(&state.drafts)?.flatten() {
+        if let Ok(bytes) = fs::read(entry.path()) {
+            if let Ok(draft) = serde_json::from_slice::<Draft>(&bytes) {
+                old_drafts.push(entry.path());
+                recover.push(Document {
+                    session: DocumentSession::restore(draft.path, draft.saved),
+                    text: draft.text,
+                });
+            }
+        }
+    }
+    if let Some(first) = recover.pop() {
+        state.docs.lock().unwrap().insert("main".into(), first);
+    }
+    for doc in recover {
+        let _ = create_window(&handle, doc);
+    }
+    if !old_drafts.is_empty() {
+        let docs = state.docs.lock().unwrap();
+        for (label, doc) in docs.iter().filter(|(_, d)| d.dirty()) {
+            let draft = Draft {
+                path: doc.session.current_path().map(Path::to_path_buf),
+                saved: doc.session.info().content,
+                text: doc.text.clone(),
+            };
+            atomic_write(
+                &state.drafts.join(format!("{label}.json")),
+                &serde_json::to_vec(&draft)?,
+            )?;
+        }
+        for path in old_drafts {
+            let keep = path
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .is_some_and(|label| docs.contains_key(label));
+            if !keep {
+                let _ = fs::remove_file(path);
+            }
+        }
+    }
+    for path in std::env::args().skip(1).filter(|s| !s.starts_with('-')) {
+        if Path::new(&path).is_file() {
+            let _ = open_path(&handle, Path::new(&path));
+        }
+    }
+    if state
+        .preferences
+        .lock()
+        .unwrap()
+        .flag("supressesUntitledDocumentOnLaunch")
+    {
+        let empty = state
+            .docs
+            .lock()
+            .unwrap()
+            .get("main")
+            .is_some_and(|d| d.text.is_empty() && d.session.current_path().is_none());
+        if empty {
+            if let Some(window) = handle.get_webview_window("main") {
+                let _ = window.hide();
+            }
+        }
+    }
+    Ok(())
+}
 pub fn run() {
     if std::env::args().any(|a| a == "--help" || a == "-h") {
-        println!("MacDown Rust 0.1.0\nUsage: macdown-rust [FILE ...]\n       macdown-rust -  (read standard input)");
+        println!("MacDownPlus 0.1.1\nUsage: macdownplus [FILE ...]\n       macdownplus -  (read standard input)");
         return;
     }
     if std::env::args().any(|a| a == "--version") {
-        println!("MacDown Rust 0.1.0");
+        println!("MacDownPlus 0.1.1");
         return;
     }
-    let piped: Option<String> = None;
     if std::env::args().any(|a| a == "-" || a == "--stdin") {
         use std::io::Read;
         let mut text = String::new();
         let _ = std::io::stdin().read_to_string(&mut text);
         // A second instance forwards file arguments, not stdin. Re-enter with a temporary
         // text file so stdin also reaches an already running application.
-        let folder = std::env::temp_dir().join("MacDown-Rust-stdin");
+        let folder = std::env::temp_dir().join("MacDownPlus-stdin");
         if let Err(e) = fs::create_dir_all(&folder) {
             eprintln!("{e}");
             return;
@@ -848,34 +1078,26 @@ pub fn run() {
         }
         return;
     }
-    let app=tauri::Builder::default().plugin(tauri_plugin_single_instance::init(|app,args,cwd|{for argument in args.iter().skip(1).filter(|s|!s.starts_with('-')){let path=Path::new(argument);let path=if path.is_absolute(){path.to_path_buf()}else{Path::new(&cwd).join(path)};if path.is_file(){let _=open_path(app,&path);}}}))
+    let app=tauri::Builder::default().manage(lifecycle::OpenRequests::default()).plugin(tauri_plugin_single_instance::init(|app,args,cwd|{for argument in args.iter().skip(1).filter(|s|!s.starts_with('-')){let path=Path::new(argument);let path=if path.is_absolute(){path.to_path_buf()}else{Path::new(&cwd).join(path)};if path.is_file(){let _=open_path(app,&path);}}}))
         .plugin(tauri_plugin_dialog::init()).plugin(tauri_plugin_opener::init())
         .on_page_load(|webview,event|{if std::env::var_os("MACDOWN_TEST_DIR").is_some(){eprintln!("native-smoke: page {:?} {}",event.event(),event.url());if event.event()==tauri::webview::PageLoadEvent::Finished&&webview.label()=="main"{let webview=webview.clone();tauri::async_runtime::spawn(async move{let _=tauri::async_runtime::spawn_blocking(||std::thread::sleep(std::time::Duration::from_secs(25))).await;let _=webview.eval("window.__TAURI_INTERNALS__.invoke('self_test_report',{report:{passed:false,diagnostic:{url:location.href,body:document.body.innerText.slice(0,1200),csp:document.querySelector('meta[http-equiv=\\\"Content-Security-Policy\\\"]')?.content,scripts:[...document.scripts].map(s=>s.src)}}})");});}}})
-        .setup(move|app|{
-            let test_dir=std::env::var_os("MACDOWN_TEST_DIR").map(PathBuf::from);let directory=test_dir.clone().unwrap_or(app.path().app_config_dir()?);let drafts=test_dir.map(|p|p.join("Drafts")).unwrap_or(app.path().app_cache_dir()?.join("Drafts"));fs::create_dir_all(&directory)?;fs::create_dir_all(&drafts)?;
-            for kind in ["Styles","Themes","Templates","PlugIns"]{fs::create_dir_all(directory.join(kind))?;}
-            for(kind,name,content)in RESOURCES{let ext=match *kind{"Styles"=>"css","Templates"=>"handlebars",_=>"style"};let path=directory.join(kind).join(format!("{name}.{ext}"));if !path.exists(){fs::write(path,content)?;}}
-            let mut prefs=Preferences::default();if let Ok(text)=fs::read_to_string(directory.join("preferences.json")){if let Ok(values)=serde_json::from_str(&text){let _=prefs.merge(values);}}
-            if prefs.text("htmlDefaultDirectoryUrl").is_empty(){if let Ok(home)=app.path().home_dir(){let _=prefs.set("htmlDefaultDirectoryUrl",json!(home.to_string_lossy()));}}
-            let recents=fs::read_to_string(directory.join("recents.json")).ok().and_then(|v|serde_json::from_str::<Vec<String>>(&v).ok()).unwrap_or_default();
-            let mut docs=HashMap::new();docs.insert("main".into(),Document::default());
-            app.manage(AppState{docs:Mutex::new(docs),preferences:Mutex::new(prefs),recents:Mutex::new(recents),directory,drafts,serial:AtomicUsize::new(1),quit:Mutex::new(None),exit:AtomicBool::new(false),speech:Mutex::new(None)});
-            let handle=app.handle().clone();menu::rebuild(&handle)?;if let Some(dir)=std::env::var_os("MACDOWN_TEST_DIR"){let plugin=PathBuf::from(dir).join("PlugIns/Smoke.bundle");if plugin.exists(){native::run_plugin(&handle,plugin);}}
-            let state=app.state::<AppState>();let mut recover=Vec::new();let mut old_drafts=Vec::new();for entry in fs::read_dir(&state.drafts)?.flatten(){if let Ok(bytes)=fs::read(entry.path()){if let Ok(draft)=serde_json::from_slice::<Draft>(&bytes){old_drafts.push(entry.path());recover.push(Document{session:DocumentSession::restore(draft.path,draft.saved),text:draft.text,dirty:true});}}}
-            if let Some(first)=recover.pop(){state.docs.lock().unwrap().insert("main".into(),first);}for doc in recover{let _=create_window(&handle,doc);}
-            if !old_drafts.is_empty(){let docs=state.docs.lock().unwrap();for(label,doc)in docs.iter().filter(|(_,d)|d.dirty){let draft=Draft{path:doc.session.current_path().map(Path::to_path_buf),saved:doc.session.info().content,text:doc.text.clone()};atomic_write(&state.drafts.join(format!("{label}.json")),&serde_json::to_vec(&draft)?)?;}for path in old_drafts{let keep=path.file_stem().and_then(|s|s.to_str()).is_some_and(|label|docs.contains_key(label));if !keep{let _=fs::remove_file(path);}}}
-            if let Some(text)=&piped{state.docs.lock().unwrap().insert("main".into(),Document{session:DocumentSession::default(),text:text.clone(),dirty:true});}
-            for path in std::env::args().skip(1).filter(|s|!s.starts_with('-')){if Path::new(&path).is_file(){let _=open_path(&handle,Path::new(&path));}}
-            if state.preferences.lock().unwrap().flag("supressesUntitledDocumentOnLaunch")&&piped.is_none(){let empty=state.docs.lock().unwrap().get("main").is_some_and(|d|d.text.is_empty()&&d.session.current_path().is_none());if empty{if let Some(window)=handle.get_webview_window("main"){let _=window.hide();}}}
-            Ok(())
-        }).on_menu_event(|app,event|route(app,event.id().as_ref()))
-        .on_window_event(|window,event|{if let tauri::WindowEvent::CloseRequested{api,..}=event{if window.label().starts_with("print-")||window.label()=="preferences"{return;}api.prevent_close();let _=window.emit("menu-action","performClose");}})
+        .setup(setup_app)
+        .on_menu_event(|app,event|route(app,event.id().as_ref()))
+        .on_window_event(|window,event|{if matches!(event,tauri::WindowEvent::Destroyed){cleanup_print(window.app_handle(),window.label());}if let tauri::WindowEvent::CloseRequested{api,..}=event{if window.label().starts_with("print-")||window.label()=="preferences"{return;}api.prevent_close();let _=window.emit("menu-action","performClose");}})
         .on_webview_event(|webview,event|{if let tauri::WebviewEvent::DragDrop(tauri::DragDropEvent::Drop{paths,..})=event{for path in paths{if let Err(error)=open_path(webview.app_handle(),path){let _=webview.emit("app-error",error);}}}})
-        .invoke_handler(tauri::generate_handler![bootstrap,get_resource,set_preferences,new_document,show_help,open_documents,save_document,update_document,mark_document,self_test_report,render_document,export_document,revert_document,close_document,request_quit,confirm_quit,native_action,clipboard_url,open_external,open_relative,preferences_window,reveal_resources,choose_directory,print_document,page_setup,speech,install_cli])
-        .build(tauri::generate_context!()).expect("Unable to start MacDown Rust");
+        .invoke_handler(tauri::generate_handler![bootstrap,get_resource,set_preferences,new_document,show_help,open_documents,save_document,update_document,mark_document,open_test_ready,open_test_report,self_test_report,render_document,export_document,revert_document,close_document,request_quit,confirm_quit,native_action,clipboard_url,open_external,open_relative,preferences_window,reveal_resources,choose_directory,print_document,page_setup,speech,install_cli])
+        .build(tauri::generate_context!()).expect("Unable to start MacDownPlus");
     app.run(|app, event| match event {
+        tauri::RunEvent::Ready => {
+            for path in app.state::<lifecycle::OpenRequests>().ready() {
+                let _ = dispatch_open(app, path);
+            }
+        }
         tauri::RunEvent::ExitRequested { api, .. } => {
-            if !app.state::<AppState>().exit.load(Ordering::SeqCst) {
+            if app
+                .try_state::<AppState>()
+                .is_some_and(|state| !state.exit.load(Ordering::SeqCst))
+            {
                 api.prevent_exit();
                 start_quit(app);
             }
@@ -893,7 +1115,9 @@ pub fn run() {
             has_visible_windows: false,
             ..
         } => {
-            let _ = create_window(app, Document::default());
+            if app.try_state::<AppState>().is_some() {
+                let _ = create_window(app, Document::default());
+            }
         }
         _ => {}
     });

@@ -1,4 +1,7 @@
 import "./style.css";
+import { ask, notify } from "./dialogs";
+import { applicationActions, applicationAction } from "./application";
+import { PreviewSnapshots } from "./preview";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -45,58 +48,20 @@ type Boot = {
   dirty: boolean;
   preferences: Preferences;
   selfTest?: boolean;
+  openTest?: boolean;
 };
 const app = document.querySelector<HTMLDivElement>("#app")!;
-function notify(message: unknown) {
-  let toast = document.querySelector<HTMLDivElement>("#toast");
-  if (!toast) {
-    toast = document.createElement("div");
-    toast.id = "toast";
-    app.append(toast);
-  }
-  toast.textContent = String(message);
-  setTimeout(() => {
-    if (toast?.textContent === String(message)) toast.textContent = "";
-  }, 6000);
-}
-function ask(
-  title: string,
-  message: string,
-  buttons: string[],
-  extra?: HTMLElement,
-): Promise<string> {
-  return new Promise((resolve) => {
-    const dialog = document.createElement("dialog"),
-      h = document.createElement("h2"),
-      p = document.createElement("p"),
-      actions = document.createElement("div");
-    h.textContent = title;
-    p.textContent = message;
-    actions.className = "actions";
-    dialog.append(h, p);
-    if (extra) dialog.append(extra);
-    dialog.append(actions);
-    for (const [i, label] of buttons.entries()) {
-      const b = document.createElement("button");
-      b.textContent = label;
-      b.className = i === buttons.length - 1 ? "primary" : "";
-      b.onclick = () => {
-        dialog.close();
-        dialog.remove();
-        resolve(label);
-      };
-      actions.append(b);
-    }
-    dialog.oncancel = (e) => {
-      e.preventDefault();
-      dialog.remove();
-      resolve("Cancel");
-    };
-    app.append(dialog);
-    dialog.showModal();
-  });
-}
 async function editorUI() {
+  let receiveDocument:
+    ((document: Pick<Boot, "document" | "text" | "dirty">) => void) | undefined;
+  let queuedDocument: Pick<Boot, "document" | "text" | "dirty"> | undefined;
+  await listen<Pick<Boot, "document" | "text" | "dirty">>(
+    "document-changed",
+    (event) => {
+      if (receiveDocument) receiveDocument(event.payload);
+      else queuedDocument = event.payload;
+    },
+  );
   let boot = await invoke<Boot>("bootstrap"),
     prefs = boot.preferences,
     file = boot.document,
@@ -104,11 +69,11 @@ async function editorUI() {
     ratio = 0.5,
     editorHidden = false,
     previewHidden = false,
+    applyingDocument = false,
     renderVersion = 0,
     token = "",
-    frameReady = false,
+    previewRatio = 0,
     renderedHTML = "",
-    pendingSnapshot: ((v: string) => void) | null = null,
     syncMuted = 0,
     renderTimer: number,
     persistTimer: number;
@@ -120,6 +85,7 @@ async function editorUI() {
     theme = new Compartment(),
     options = new Compartment(),
     lineEnding = new Compartment();
+  const snapshots = new PreviewSnapshots(frame);
   const current = () => view.state.doc.toString();
   const dirty = () => current() !== saved;
   async function persist() {
@@ -204,6 +170,10 @@ async function editorUI() {
         EditorView.lineWrapping,
         EditorView.updateListener.of((u) => {
           if (u.docChanged) {
+            if (applyingDocument) {
+              count();
+              return;
+            }
             void invoke("mark_document", {
               text: current(),
               dirty: dirty(),
@@ -370,38 +340,10 @@ async function editorUI() {
     if (version !== renderVersion) return;
     renderedHTML = html;
     token = next;
-    frameReady = false;
+    snapshots.begin(token);
     frame.srcdoc = html;
   }
-  async function snapshot() {
-    if (!frameReady)
-      await new Promise<void>((resolve, reject) => {
-        const started = Date.now();
-        const timer = setInterval(() => {
-          if (frameReady) {
-            clearInterval(timer);
-            resolve();
-          } else if (Date.now() - started > 20000) {
-            clearInterval(timer);
-            reject(
-              Error(
-                "Preview is still rendering. Please retry after equations and diagrams finish.",
-              ),
-            );
-          }
-        }, 50);
-      });
-    return new Promise<string>((resolve, reject) => {
-      pendingSnapshot = resolve;
-      frame.contentWindow?.postMessage({ token, type: "snapshot" }, "*");
-      setTimeout(() => {
-        if (pendingSnapshot === resolve) {
-          pendingSnapshot = null;
-          reject(Error("Preview did not respond."));
-        }
-      }, 5000);
-    });
-  }
+  const snapshot = () => snapshots.snapshot();
   async function save(saveAs = false) {
     let capture = current();
     if (
@@ -430,9 +372,16 @@ async function editorUI() {
       "Your changes will be lost if you do not save them.",
       ["Don't Save", "Cancel", "Save"],
     );
-    return answer === "Don't Save" || (answer === "Save" && (await save()));
+    return (
+      answer === "Don't Save" ||
+      (answer === "Save" && (await save()) && !dirty())
+    );
   }
   function replaceDocument(next: Pick<Boot, "document" | "text" | "dirty">) {
+    applyingDocument = true;
+    clearTimeout(renderTimer);
+    clearTimeout(persistTimer);
+    previewRatio = 0;
     file = next.document;
     saved = file.content;
     view.dispatch({
@@ -444,7 +393,10 @@ async function editorUI() {
         ),
       ),
     });
-    void render();
+    applyingDocument = false;
+    void render()
+      .then(() => reportOpened())
+      .catch(notify);
   }
   const toolbar: [string, string][] = [
     ["B", "toggleStrong"],
@@ -476,6 +428,10 @@ async function editorUI() {
     app.querySelector("#toolbar")!.append(b);
   }
   async function action(id: string) {
+    if (applicationActions.has(id)) {
+      await applicationAction(id, prefs);
+      return;
+    }
     const clipboard =
       id === "toggleLink" || id === "toggleImage"
         ? await invoke<string | null>("clipboard_url")
@@ -520,10 +476,17 @@ async function editorUI() {
         await save(true);
         break;
       case "performClose":
-        if (await approveClose()) await invoke("close_document");
+        if (await approveClose()) {
+          const approvedText = current();
+          await persist();
+          await invoke("close_document", { approvedText });
+        }
         break;
       case "quit-confirm":
-        await invoke("confirm_quit", { approved: await approveClose() });
+        const approved = await approveClose();
+        const approvedText = current();
+        await persist();
+        await invoke("confirm_quit", { approved, approvedText });
         break;
       case "terminate":
         await invoke("request_quit");
@@ -579,12 +542,6 @@ async function editorUI() {
           html: exportedHTML(await snapshot()),
           pdf: id === "exportPdf",
         });
-        break;
-      case "runPageLayout":
-        await invoke("page_setup");
-        break;
-      case "showPreferencesWindow":
-        await invoke("preferences_window");
         break;
       case "setEditorOneQuarter":
         ratio = 0.25;
@@ -643,54 +600,6 @@ async function editorUI() {
       case "redo":
         redo(view);
         break;
-      case "showHelp":
-        await invoke("show_help");
-        break;
-      case "showContributing":
-        await invoke("open_external", {
-          url: "https://github.com/476139183/MacDown-Rust",
-        });
-        break;
-      case "plugins":
-        await invoke("reveal_resources", { kind: "PlugIns" });
-        break;
-      case "orderFrontStandardAboutPanel":
-        await ask(
-          "MacDown Rust 0.1.0",
-          "Markdown editor built with Rust + Tauri.\nBased on MacDown by Tzu-ping Chung.\nMacDown: https://github.com/MacDownApp/macdown\nMIT license; complete third-party notices are included with the source distribution.",
-          ["Close"],
-        );
-        break;
-      case "checkForUpdates": {
-        const response = await fetch(
-          "https://api.github.com/repos/476139183/MacDown-Rust/releases",
-        );
-        if (!response.ok)
-          throw Error("Unable to check releases (" + response.status + ").");
-        const releases = await response.json();
-        const latest = releases.find(
-          (r: any) =>
-            !r.draft && (prefs.updateIncludesPreReleases || !r.prerelease),
-        );
-        if (latest && latest.tag_name !== "v0.1.0") {
-          if (
-            (await ask(
-              "New release available",
-              latest.name || latest.tag_name,
-              ["Cancel", "View Release"],
-            )) === "View Release"
-          )
-            await invoke("open_external", { url: latest.html_url });
-        } else
-          await ask(
-            "Check for Updates",
-            latest
-              ? "You are running the latest published version."
-              : "No releases have been published yet.",
-            ["Close"],
-          );
-        break;
-      }
       default:
         await invoke("native_action", { selector: id });
     }
@@ -711,13 +620,16 @@ async function editorUI() {
   window.addEventListener("message", (e) => {
     if (e.source !== frame.contentWindow || e.data?.token !== token) return;
     const data = e.data;
+    snapshots.accept(token, data.type, data.html);
     if (data.type === "ready") {
-      frameReady = true;
+      const el = view.scrollDOM;
+      const ratio = prefs.editorSyncScrolling
+        ? el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight)
+        : previewRatio;
+      frame.contentWindow?.postMessage({ token, type: "scroll", ratio }, "*");
     }
-    if (data.type === "snapshot" && typeof data.html === "string") {
-      pendingSnapshot?.(data.html);
-      pendingSnapshot = null;
-    }
+    if (data.type === "scroll" && typeof data.ratio === "number")
+      previewRatio = data.ratio;
     if (
       data.type === "scroll" &&
       prefs.editorSyncScrolling &&
@@ -777,10 +689,11 @@ async function editorUI() {
     prefs = e.payload;
     void applyPreferences().catch(notify);
   });
-  await listen<Pick<Boot, "document" | "text" | "dirty">>(
-    "document-changed",
-    (e) => replaceDocument(e.payload),
-  );
+  receiveDocument = replaceDocument;
+  if (queuedDocument) {
+    replaceDocument(queuedDocument);
+    queuedDocument = undefined;
+  }
   await listen<string>("app-error", (e) => notify(e.payload));
   await listen<boolean>("print-result", (e) => {
     if (!e.payload) notify("Printing was cancelled or failed.");
@@ -809,10 +722,22 @@ async function editorUI() {
     },
     true,
   );
+  async function reportOpened() {
+    if (!boot.openTest || !file.path) return;
+    const html = await snapshot();
+    await invoke("open_test_report", {
+      content: current(),
+      preview: html.includes("<body"),
+    });
+  }
   layout();
   await applyPreferences();
   await persist();
   view.focus();
+  if (boot.openTest) {
+    await invoke("open_test_ready");
+    await reportOpened();
+  }
   if (boot.selfTest) {
     try {
       const html = exportedHTML(await snapshot()),
@@ -823,6 +748,7 @@ async function editorUI() {
         diagrams: parsed.querySelectorAll("svg").length === 2,
         ipc: !html.includes("__TAURI_INTERNALS__"),
         nativeDocument: file.path.endsWith("fixture.md"),
+        revert: false,
       };
       view.dispatch({
         changes: {
@@ -831,6 +757,16 @@ async function editorUI() {
         },
       });
       checks.nativeDocument = checks.nativeDocument && (await save());
+      const savedBeforeRevert = current();
+      view.dispatch({
+        changes: {
+          from: view.state.doc.length,
+          insert: "\nDISCARDED CHANGE\n",
+        },
+      });
+      await persist();
+      replaceDocument(await invoke("revert_document"));
+      checks.revert = current() === savedBeforeRevert;
       const printed = new Promise<boolean>((resolve, reject) => {
         void listen<boolean>("print-result", (e) => resolve(e.payload));
         setTimeout(() => reject(Error("Native PDF export timed out")), 20000);

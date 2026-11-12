@@ -1,0 +1,32 @@
+{
+  "version": "0.1.1",
+  "date": "2026-11-12",
+  "launch_services": [
+    {
+      "mode": "cold",
+      "passed": true,
+      "readOnly": true,
+      "bytes": 41
+    },
+    {
+      "mode": "warm",
+      "passed": true,
+      "readOnly": true,
+      "bytes": 41
+    }
+  ],
+  "installed_document": [
+    {
+      "mode": "cold",
+      "passed": true,
+      "readOnly": true,
+      "bytes": 1971
+    },
+    {
+      "mode": "warm",
+      "passed": true,
+      "readOnly": true,
+      "bytes": 1971
+    }
+  ]
+}
