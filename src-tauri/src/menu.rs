@@ -18,14 +18,15 @@ struct Entry {
     children: Option<Vec<Entry>>,
 }
 fn item(app: &AppHandle, e: &Entry, recents: &[String]) -> tauri::Result<Box<dyn IsMenuItem<Wry>>> {
+    let title = crate::locale::menu(&e.id, &e.title);
     if e.separator {
         return Ok(Box::new(PredefinedMenuItem::separator(app)?));
     }
     if e.title == "Services" {
-        return Ok(Box::new(PredefinedMenuItem::services(app, Some(&e.title))?));
+        return Ok(Box::new(PredefinedMenuItem::services(app, Some(&title))?));
     }
     if let Some(children) = &e.children {
-        let submenu = Submenu::with_id(app, &e.id, &e.title, true)?;
+        let submenu = Submenu::with_id(app, &e.id, &title, true)?;
         if e.title == "Open Recent" {
             for (i, path) in recents.iter().enumerate() {
                 submenu.append(&MenuItem::with_id(
@@ -39,6 +40,22 @@ fn item(app: &AppHandle, e: &Entry, recents: &[String]) -> tauri::Result<Box<dyn
         }
         for child in children {
             submenu.append(&*item(app, child, recents)?)?;
+        }
+        if e.title == "Format" {
+            submenu.append(&PredefinedMenuItem::separator(app)?)?;
+            for (id, label) in [
+                ("textColor", "Text color"),
+                ("backgroundColor", "Background color"),
+                ("clearColors", "Clear colors"),
+            ] {
+                submenu.append(&MenuItem::with_id(
+                    app,
+                    id,
+                    crate::locale::text(label),
+                    true,
+                    None::<&str>,
+                )?)?;
+            }
         }
         if e.title == "Plug-ins" {
             let state = app.state::<crate::AppState>();
@@ -63,7 +80,7 @@ fn item(app: &AppHandle, e: &Entry, recents: &[String]) -> tauri::Result<Box<dyn
             submenu.append(&MenuItem::with_id(
                 app,
                 "plugins",
-                "Manage Plug-ins…",
+                crate::locale::text("Manage Plug-ins…"),
                 true,
                 None::<&str>,
             )?)?;
@@ -71,24 +88,24 @@ fn item(app: &AppHandle, e: &Entry, recents: &[String]) -> tauri::Result<Box<dyn
         return Ok(Box::new(submenu));
     }
     let native = match e.action.as_str() {
-        "undo" => Some(PredefinedMenuItem::undo(app, Some(&e.title))?),
-        "redo" => Some(PredefinedMenuItem::redo(app, Some(&e.title))?),
-        "cut" => Some(PredefinedMenuItem::cut(app, Some(&e.title))?),
-        "copy" => Some(PredefinedMenuItem::copy(app, Some(&e.title))?),
-        "paste" => Some(PredefinedMenuItem::paste(app, Some(&e.title))?),
-        "selectAll" => Some(PredefinedMenuItem::select_all(app, Some(&e.title))?),
-        "hide" => Some(PredefinedMenuItem::hide(app, Some(&e.title))?),
-        "hideOtherApplications" => Some(PredefinedMenuItem::hide_others(app, Some(&e.title))?),
-        "unhideAllApplications" => Some(PredefinedMenuItem::show_all(app, Some(&e.title))?),
-        "performMiniaturize" => Some(PredefinedMenuItem::minimize(app, Some(&e.title))?),
-        "performZoom" => Some(PredefinedMenuItem::maximize(app, Some(&e.title))?),
+        "undo" => Some(PredefinedMenuItem::undo(app, Some(&title))?),
+        "redo" => Some(PredefinedMenuItem::redo(app, Some(&title))?),
+        "cut" => Some(PredefinedMenuItem::cut(app, Some(&title))?),
+        "copy" => Some(PredefinedMenuItem::copy(app, Some(&title))?),
+        "paste" => Some(PredefinedMenuItem::paste(app, Some(&title))?),
+        "selectAll" => Some(PredefinedMenuItem::select_all(app, Some(&title))?),
+        "hide" => Some(PredefinedMenuItem::hide(app, Some(&title))?),
+        "hideOtherApplications" => Some(PredefinedMenuItem::hide_others(app, Some(&title))?),
+        "unhideAllApplications" => Some(PredefinedMenuItem::show_all(app, Some(&title))?),
+        "performMiniaturize" => Some(PredefinedMenuItem::minimize(app, Some(&title))?),
+        "performZoom" => Some(PredefinedMenuItem::maximize(app, Some(&title))?),
         _ => None,
     };
     if let Some(native) = native {
         return Ok(Box::new(native));
     }
     if e.title == "Services" {
-        return Ok(Box::new(PredefinedMenuItem::services(app, Some(&e.title))?));
+        return Ok(Box::new(PredefinedMenuItem::services(app, Some(&title))?));
     }
     let id = if e.action.is_empty() {
         e.id.clone()
@@ -98,7 +115,7 @@ fn item(app: &AppHandle, e: &Entry, recents: &[String]) -> tauri::Result<Box<dyn
     Ok(Box::new(MenuItem::with_id(
         app,
         id,
-        &e.title,
+        &title,
         true,
         if e.shortcut.is_empty() {
             None

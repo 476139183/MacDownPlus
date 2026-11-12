@@ -6,7 +6,7 @@
   "extensionTables": true,
   "extensionFencedCode": true,
   "extensionAutolink": false,
-  "extensionStrikethough": false,
+  "extensionStrikethough": true,
   "extensionUnderline": false,
   "extensionSuperscript": false,
   "extensionHighlight": false,

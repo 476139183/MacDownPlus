@@ -1,3 +1,5 @@
+import { colorSelection } from "./colors";
+import { setLanguage, t, phrases } from "./i18n";
 import "./style.css";
 import { ask, notify } from "./dialogs";
 import { applicationActions, applicationAction } from "./application";
@@ -43,6 +45,8 @@ import { format } from "./format";
 import { preferencesUI } from "./preferences";
 type FileInfo = { path: string; name: string; content: string };
 type Boot = {
+  locale?: string;
+  translations?: Record<string, string>;
   document: FileInfo;
   text: string;
   dirty: boolean;
@@ -62,8 +66,9 @@ async function editorUI() {
       else queuedDocument = event.payload;
     },
   );
-  let boot = await invoke<Boot>("bootstrap"),
-    prefs = boot.preferences,
+  const boot = await invoke<Boot>("bootstrap");
+  setLanguage(boot.locale, boot.translations);
+  let prefs = boot.preferences,
     file = boot.document,
     saved = file.content,
     ratio = 0.5,
@@ -75,10 +80,16 @@ async function editorUI() {
     previewRatio = 0,
     renderedHTML = "",
     syncMuted = 0,
-    renderTimer: number,
-    persistTimer: number;
+    renderTimer = 0,
+    persistTimer = 0;
   app.innerHTML =
     '<nav id="toolbar" hidden aria-label="Formatting"></nav><main id="workspace"><section id="editor" aria-label="Markdown editor"></section><div id="divider" role="separator" tabindex="0" aria-label="Resize panes" aria-valuemin="10" aria-valuemax="90" aria-valuenow="50"></div><iframe id="preview" title="Markdown preview" sandbox="allow-scripts"></iframe></main><footer id="status" hidden></footer><div id="toast" role="status"></div>';
+  for (const node of app.querySelectorAll("[aria-label], [title]")) {
+    for (const attr of ["aria-label", "title"]) {
+      const value = node.getAttribute(attr);
+      if (value) node.setAttribute(attr, t(value));
+    }
+  }
   const frame = app.querySelector<HTMLIFrameElement>("#preview")!,
     editor = app.querySelector<HTMLElement>("#editor")!,
     divider = app.querySelector<HTMLElement>("#divider")!,
@@ -97,6 +108,7 @@ async function editorUI() {
     state: EditorState.create({
       doc: boot.text,
       extensions: [
+        EditorState.phrases.of(phrases()),
         lineEnding.of(
           EditorState.lineSeparator.of(
             boot.text.includes("\r\n") ? "\r\n" : "\n",
@@ -317,10 +329,12 @@ async function editorUI() {
     ].filter((s) => s.isWordLike).length;
     status.textContent =
       prefs.editorWordCountType === 1
-        ? `${[...text].length} characters`
+        ? t("{count} characters", { count: [...text].length })
         : prefs.editorWordCountType === 2
-          ? `${[...text.replace(/\s/g, "")].length} characters`
-          : `${words} words`;
+          ? t("{count} characters", {
+              count: [...text.replace(/\s/g, "")].length,
+            })
+          : t("{count} words", { count: words });
   }
   function layout() {
     editor.hidden = editorHidden;
@@ -368,7 +382,7 @@ async function editorUI() {
   async function approveClose() {
     if (!dirty()) return true;
     const answer = await ask(
-      `Save changes to “${file.name}”?`,
+      t("Save changes to “{name}”?", { name: file.name }),
       "Your changes will be lost if you do not save them.",
       ["Don't Save", "Cancel", "Save"],
     );
@@ -418,16 +432,81 @@ async function editorUI() {
     ["←", "unindent"],
     ["Link", "toggleLink"],
     ["Image", "toggleImage"],
+    ["Text color", "textColor"],
+    ["Background color", "backgroundColor"],
+    ["Clear colors", "clearColors"],
     ["Render", "render"],
   ];
   for (const [label, id] of toolbar) {
     const b = document.createElement("button");
-    b.textContent = label;
-    b.title = id;
+    b.textContent = t(label);
+    b.title = t(id);
     b.onclick = () => void action(id).catch(notify);
     app.querySelector("#toolbar")!.append(b);
   }
   async function action(id: string) {
+    if (["textColor", "backgroundColor", "clearColors"].includes(id)) {
+      if (view.state.selection.main.empty) {
+        notify(t("Select text to format."));
+        return;
+      }
+      if (id === "clearColors") colorSelection(view);
+      else {
+        const extra = document.createElement("div"),
+          picker = document.createElement("input"),
+          label = document.createElement("label"),
+          hex = document.createElement("input");
+        picker.type = "color";
+        picker.value = id === "textColor" ? "#c62828" : "#fff59d";
+        picker.setAttribute("aria-label", t("Choose color"));
+        hex.type = "text";
+        hex.value = picker.value;
+        hex.maxLength = 7;
+        hex.pattern = "#[0-9a-fA-F]{6}";
+        label.textContent = t("Hex color");
+        label.append(hex);
+        picker.oninput = () => {
+          hex.value = picker.value;
+        };
+        hex.oninput = () => {
+          if (/^#[0-9a-f]{6}$/i.test(hex.value)) picker.value = hex.value;
+        };
+        extra.append(picker, label);
+        const answer = await ask(
+          id === "textColor" ? "Text color" : "Background color",
+          "",
+          ["Cancel", "Apply"],
+          extra,
+        );
+        if (answer !== "Apply") {
+          view.focus();
+          return;
+        }
+        if (!/^#[0-9a-f]{6}$/i.test(hex.value)) {
+          notify(t("Enter a color such as #c62828."));
+          view.focus();
+          return;
+        }
+        colorSelection(
+          view,
+          id === "textColor" ? "color" : "background-color",
+          hex.value,
+        );
+      }
+      clearTimeout(renderTimer);
+      await render();
+      return;
+    }
+    const extension: Record<string, string> = {
+      toggleStrikethrough: "extensionStrikethough",
+      toggleUnderline: "extensionUnderline",
+      toggleHighlight: "extensionHighlight",
+    };
+    if (extension[id] && !prefs[extension[id]])
+      prefs = await invoke("set_preferences", {
+        values: { [extension[id]]: true },
+      });
+
     if (applicationActions.has(id)) {
       await applicationAction(id, prefs);
       return;
@@ -443,8 +522,11 @@ async function editorUI() {
         ["*", "-", "+"][prefs.editorUnorderedListMarkerType] || "*",
         clipboard || "",
       )
-    )
+    ) {
+      clearTimeout(renderTimer);
+      await render();
       return;
+    }
     if (id.startsWith("performFindPanelAction:")) {
       const tag = id.split(":")[1];
       if (tag === "2") findNext(view);
@@ -519,7 +601,7 @@ async function editorUI() {
           input.type = "checkbox";
           input.checked = true;
           input.name = name;
-          row.append(input, document.createTextNode(label));
+          row.append(input, document.createTextNode(t(label)));
           extra.append(row);
         }
         if (
@@ -728,6 +810,7 @@ async function editorUI() {
     await invoke("open_test_report", {
       content: current(),
       preview: html.includes("<body"),
+      language: document.documentElement.lang,
     });
   }
   layout();
@@ -740,6 +823,25 @@ async function editorUI() {
   }
   if (boot.selfTest) {
     try {
+      view.dispatch({ selection: EditorSelection.range(2, 7) });
+      const textColored = colorSelection(view, "color", "#c62828");
+      const backgroundColored = colorSelection(
+        view,
+        "background-color",
+        "#fff59d",
+      );
+      const underlineStart = current().length;
+      const underlineProbe = "\n\nUnderline 中文。\n\n";
+      view.dispatch({
+        changes: { from: underlineStart, insert: underlineProbe },
+        selection: EditorSelection.range(
+          underlineStart + 2,
+          underlineStart + underlineProbe.length,
+        ),
+      });
+      await action("toggleUnderline");
+      clearTimeout(renderTimer);
+      await render();
       const html = exportedHTML(await snapshot()),
         parsed = new DOMParser().parseFromString(html, "text/html");
       const checks = {
@@ -749,6 +851,15 @@ async function editorUI() {
         ipc: !html.includes("__TAURI_INTERNALS__"),
         nativeDocument: file.path.endsWith("fixture.md"),
         revert: false,
+        underline:
+          parsed.querySelector("u")?.textContent === "Underline 中文。",
+        inlineColors:
+          textColored &&
+          backgroundColored &&
+          parsed.querySelector<HTMLSpanElement>("h1 span")?.style.color ===
+            "rgb(198, 40, 40)" &&
+          parsed.querySelector<HTMLSpanElement>("h1 span")?.style
+            .backgroundColor === "rgb(255, 245, 157)",
       };
       view.dispatch({
         changes: {

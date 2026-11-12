@@ -30,5 +30,23 @@ fn main() {
         ),
     )
     .unwrap();
+    let locale_dir = PathBuf::from("../src/locales");
+    let mut locales = Vec::new();
+    for entry in fs::read_dir(&locale_dir).unwrap().flatten() {
+        let path = entry.path();
+        if path.extension().is_some_and(|x| x == "json") {
+            locales.push(format!(
+                "({:?},{:?})",
+                path.file_stem().unwrap().to_string_lossy(),
+                fs::read_to_string(&path).unwrap()
+            ));
+        }
+    }
+    fs::write(
+        PathBuf::from(env::var("OUT_DIR").unwrap()).join("locales.rs"),
+        format!("const LOCALES:&[(&str,&str)]=&[{}];", locales.join(",")),
+    )
+    .unwrap();
+    println!("cargo:rerun-if-changed={}", locale_dir.display());
     tauri_build::build()
 }

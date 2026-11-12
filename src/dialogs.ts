@@ -1,3 +1,4 @@
+import { t } from "./i18n";
 const app = document.querySelector<HTMLDivElement>("#app")!;
 export function notify(message: unknown) {
   let toast = document.querySelector<HTMLDivElement>("#toast");
@@ -6,9 +7,9 @@ export function notify(message: unknown) {
     toast.id = "toast";
     app.append(toast);
   }
-  toast.textContent = String(message);
+  toast.textContent = t(String(message));
   setTimeout(() => {
-    if (toast?.textContent === String(message)) toast.textContent = "";
+    if (toast?.textContent === t(String(message))) toast.textContent = "";
   }, 6000);
 }
 export function ask(
@@ -22,15 +23,15 @@ export function ask(
       h = document.createElement("h2"),
       p = document.createElement("p"),
       actions = document.createElement("div");
-    h.textContent = title;
-    p.textContent = message;
+    h.textContent = t(title);
+    p.textContent = t(message);
     actions.className = "actions";
     dialog.append(h, p);
     if (extra) dialog.append(extra);
     dialog.append(actions);
     for (const [i, label] of buttons.entries()) {
       const b = document.createElement("button");
-      b.textContent = label;
+      b.textContent = t(label);
       b.className = i === buttons.length - 1 ? "primary" : "";
       b.onclick = () => {
         dialog.close();

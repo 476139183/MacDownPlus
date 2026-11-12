@@ -1,0 +1,49 @@
+{
+  "version": "0.1.2",
+  "rustTests": 18,
+  "uiTests": 13,
+  "builtApp": [
+    {
+      "mode": "cold",
+      "passed": true,
+      "readOnly": true,
+      "bytes": 41,
+      "locale": "zh-Hans",
+      "webLocale": "zh-Hans",
+      "editMenu": "编辑",
+      "languageMatches": true
+    },
+    {
+      "mode": "warm",
+      "passed": true,
+      "readOnly": true,
+      "bytes": 41,
+      "locale": "zh-Hans",
+      "webLocale": "zh-Hans",
+      "editMenu": "编辑",
+      "languageMatches": true
+    }
+  ],
+  "installedAppUserDocument": [
+    {
+      "mode": "cold",
+      "passed": true,
+      "readOnly": true,
+      "bytes": 1971,
+      "locale": "zh-Hans",
+      "webLocale": "zh-Hans",
+      "editMenu": "编辑",
+      "languageMatches": true
+    },
+    {
+      "mode": "warm",
+      "passed": true,
+      "readOnly": true,
+      "bytes": 1971,
+      "locale": "zh-Hans",
+      "webLocale": "zh-Hans",
+      "editMenu": "编辑",
+      "languageMatches": true
+    }
+  ]
+}

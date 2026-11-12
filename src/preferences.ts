@@ -1,3 +1,4 @@
+import { setLanguage, t } from "./i18n";
 import { applicationActions, applicationAction } from "./application";
 import { notify } from "./dialogs";
 import { invoke } from "@tauri-apps/api/core";
@@ -100,9 +101,12 @@ const groups: Record<string, Row[]> = {
 };
 export async function preferencesUI() {
   const boot = await invoke<{
+    locale?: string;
+    translations?: Record<string, string>;
     preferences: Preferences;
     resources: Record<string, string[]>;
   }>("bootstrap");
+  setLanguage(boot.locale, boot.translations);
   let prefs = boot.preferences,
     tab = "General";
   await listen<string>("menu-action", (event) => {
@@ -112,7 +116,10 @@ export async function preferencesUI() {
   document.body.classList.add("preferences");
   const app = document.querySelector<HTMLDivElement>("#app")!;
   app.innerHTML =
-    '<nav id="pref-tabs"></nav><main class="pref-content"></main><footer class="pref-footer">Changes are saved automatically.</footer>';
+    '<nav id="pref-tabs"></nav><main class="pref-content"></main><footer class="pref-footer"></footer>';
+  app.querySelector(".pref-footer")!.textContent = t(
+    "Changes are saved automatically.",
+  );
   async function update(key: string, value: any) {
     try {
       prefs = await invoke("set_preferences", { values: { [key]: value } });
@@ -125,7 +132,7 @@ export async function preferencesUI() {
     nav.replaceChildren();
     for (const name of Object.keys(groups)) {
       const b = document.createElement("button");
-      b.textContent = name;
+      b.textContent = t(name);
       b.classList.toggle("active", name === tab);
       b.onclick = () => {
         tab = name;
@@ -138,15 +145,16 @@ export async function preferencesUI() {
     if (tab === "Terminal") {
       const p = document.createElement("p");
       p.className = "pref-note";
-      p.textContent =
-        "Open documents from Terminal: macdownplus README.md\nRead standard input: cat README.md | macdownplus -\nInstall into a directory included in your PATH. The tool launches this copy of the application.";
+      p.textContent = t(
+        "Open documents from Terminal: macdownplus README.md\nRead standard input: cat README.md | macdownplus -\nInstall into a directory included in your PATH. The tool launches this copy of the application.",
+      );
       p.style.whiteSpace = "pre-line";
       const b = document.createElement("button");
-      b.textContent = "Install Command Line Tool…";
+      b.textContent = t("Install Command Line Tool…");
       b.onclick = async () => {
         try {
           const path = await invoke<string | null>("install_cli");
-          if (path) alert(`Installed: ${path}`);
+          if (path) alert(t("Installed: {path}", { path }));
         } catch (e) {
           alert(String(e));
         }
@@ -158,7 +166,7 @@ export async function preferencesUI() {
       const row = document.createElement("label");
       row.className = "pref-row";
       const text = document.createElement("span");
-      text.textContent = label;
+      text.textContent = t(label);
       const value = prefs[key];
       if (typeof value === "boolean") {
         const input = document.createElement("input");
@@ -174,7 +182,7 @@ export async function preferencesUI() {
           input.value = String(value[part]);
           input.setAttribute(
             "aria-label",
-            part === "size" ? "Font size" : "Font family",
+            t(part === "size" ? "Font size" : "Font family"),
           );
           input.onchange = () =>
             void update(key, {
@@ -197,7 +205,7 @@ export async function preferencesUI() {
           const select = document.createElement("select");
           for (const [i, v] of choices.entries()) {
             const opt = document.createElement("option");
-            opt.textContent = v;
+            opt.textContent = options ? t(v) : v;
             opt.value = typeof value === "number" ? String(i) : v;
             select.append(opt);
           }
@@ -221,7 +229,7 @@ export async function preferencesUI() {
         }
         if (key === "htmlDefaultDirectoryUrl") {
           const b = document.createElement("button");
-          b.textContent = "Choose…";
+          b.textContent = t("Choose…");
           b.onclick = async (e) => {
             e.preventDefault();
             const path = await invoke<string | null>("choose_directory");
@@ -240,7 +248,7 @@ export async function preferencesUI() {
         ? ["Themes"]
         : ["Styles", "Templates"]) {
         const b = document.createElement("button");
-        b.textContent = `Open ${kind} Folder…`;
+        b.textContent = t(`Open ${kind} Folder…`);
         b.style.marginRight = "8px";
         b.onclick = () => void invoke("reveal_resources", { kind });
         main.append(b);

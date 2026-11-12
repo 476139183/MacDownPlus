@@ -3,9 +3,11 @@
     "diagrams": true,
     "heading": true,
     "highlight": true,
+    "inlineColors": true,
     "ipc": true,
     "nativeDocument": true,
-    "revert": true
+    "revert": true,
+    "underline": true
   },
   "passed": true,
   "pdf": true,

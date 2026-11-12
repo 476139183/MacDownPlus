@@ -31,7 +31,7 @@ export async function applicationAction(id: string, prefs: Preferences) {
       break;
     case "orderFrontStandardAboutPanel":
       await ask(
-        "MacDownPlus 0.1.1",
+        "MacDownPlus 0.1.4",
         "Markdown editor built with Rust + Tauri.\nBased on MacDown by Tzu-ping Chung.\nMacDown: https://github.com/MacDownApp/macdown\nMIT license; complete third-party notices are included with the source distribution.",
         ["Close"],
       );
@@ -47,7 +47,7 @@ export async function applicationAction(id: string, prefs: Preferences) {
         (r: any) =>
           !r.draft && (prefs.updateIncludesPreReleases || !r.prerelease),
       );
-      if (latest && latest.tag_name !== "v0.1.1") {
+      if (latest && latest.tag_name !== "v0.1.4") {
         if (
           (await ask("New release available", latest.name || latest.tag_name, [
             "Cancel",

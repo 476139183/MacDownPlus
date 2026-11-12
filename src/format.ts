@@ -6,9 +6,9 @@ export function format(
   marker = "*",
   url = "",
 ) {
-  const { from, to } = view.state.selection.main,
-    doc = view.state.doc,
-    selected = doc.sliceString(from, to);
+  let { from, to } = view.state.selection.main;
+  const doc = view.state.doc;
+  let selected = doc.sliceString(from, to);
   const wraps: Record<string, [string, string]> = {
     toggleStrong: ["**", "**"],
     toggleEmphasis: ["*", "*"],
@@ -23,6 +23,71 @@ export function format(
   const wrap = wraps[action];
   if (wrap) {
     const [a, b] = wrap;
+    const inline = [
+      "toggleStrong",
+      "toggleEmphasis",
+      "toggleUnderline",
+      "toggleStrikethrough",
+      "toggleHighlight",
+      "toggleInlineCode",
+    ].includes(action);
+    if (inline && selected.length) {
+      const leading = selected.match(/^\s*/u)![0].length;
+      const content = selected.trim();
+      if (!content) {
+        view.focus();
+        return true;
+      }
+      from += leading;
+      to = from + content.length;
+      selected = content;
+      if (selected.includes("\n")) {
+        // Older versions could leave the closing marker on a line of its own.
+        if (selected.startsWith(a) && selected.endsWith("\n" + b))
+          selected = selected.slice(a.length, -b.length);
+        let atLineStart = doc.lineAt(from).from === from;
+        const lines = selected.split(/(\r?\n)/).map((text) => {
+          const prefix = atLineStart
+            ? text.match(
+                /^(?: {0,3}(?:#{1,6}[ \t]+|>[ \t]*|(?:[-+*]|\d+[.)])[ \t]+))/,
+              )?.[0] || ""
+            : "";
+          atLineStart = text.endsWith("\n");
+          const body = text.slice(prefix.length),
+            leading = body.match(/^[^\S\r\n]*/u)![0],
+            trailing = body.match(/[^\S\r\n]*$/u)![0];
+          return { text, prefix, leading, trailing, body: body.trim() };
+        });
+        const nonempty = lines.filter((line) => line.body);
+        const remove =
+          nonempty.length > 0 &&
+          nonempty.every(
+            (line) =>
+              line.body.startsWith(a) &&
+              line.body.endsWith(b) &&
+              line.body.length >= a.length + b.length,
+          );
+        const text = lines
+          .map((line) =>
+            !line.body
+              ? line.text
+              : line.prefix +
+                line.leading +
+                (remove
+                  ? line.body.slice(a.length, -b.length)
+                  : a + line.body + b) +
+                line.trailing,
+          )
+          .join("");
+        view.dispatch({
+          changes: { from, to, insert: text },
+          selection: EditorSelection.range(from, from + text.length),
+          userEvent: "input",
+        });
+        view.focus();
+        return true;
+      }
+    }
     let start = from,
       end = to,
       text = a + selected + b,

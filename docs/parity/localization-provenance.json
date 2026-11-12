@@ -1,0 +1,37 @@
+{
+  "upstream": "MacDownApp/macdown",
+  "commit": "3e2a2bf101c215c143bf00d9f857965f0ee82487",
+  "catalogs": [
+    "ar",
+    "cs",
+    "da-DK",
+    "da",
+    "de-DE",
+    "de",
+    "en",
+    "es",
+    "et",
+    "fi",
+    "fr",
+    "is",
+    "it-IT",
+    "ja",
+    "ko-KR",
+    "nb-NO",
+    "nl-NL",
+    "pt-BR",
+    "ru-RU",
+    "sk-SK",
+    "sk",
+    "sv",
+    "tr",
+    "zh-Hans",
+    "zh-Hant"
+  ],
+  "new_ui_fully_completed": [
+    "en",
+    "zh-Hans",
+    "zh-Hant"
+  ],
+  "other_locales": "Reuse upstream strings; untranslated new UI falls back to English."
+}

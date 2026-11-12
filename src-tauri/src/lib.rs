@@ -1,5 +1,6 @@
 mod documents;
 mod lifecycle;
+mod locale;
 mod menu;
 mod native;
 mod pdf;
@@ -125,13 +126,15 @@ fn dispatch_open(app: &AppHandle, path: PathBuf) -> Result<(), String> {
     let handle = app.clone();
     app.run_on_main_thread(move || {
         if let Err(error) = open_document_now(&handle, &path) {
-            let message = format!("无法打开 {}：{error}", path.display());
+            let message = locale::text("无法打开 {path}：{error}")
+                .replace("{path}", &path.display().to_string())
+                .replace("{error}", &locale::text(&error));
             eprintln!("{message}");
             let _ = handle.emit("app-error", &message);
             handle
                 .dialog()
                 .message(message)
-                .title("打开文档失败")
+                .title(locale::text("打开文档失败"))
                 .show(|_| {});
         }
     })
@@ -260,6 +263,8 @@ fn bootstrap(window: WebviewWindow, state: State<AppState>) -> Value {
     result["selfTest"] =
         json!(window.label() == "main" && std::env::var_os("MACDOWN_TEST_DIR").is_some());
     result["openTest"] = json!(std::env::var_os("MACDOWN_OPEN_TEST_DIR").is_some());
+    result["locale"] = json!(locale::selected());
+    result["translations"] = json!(locale::messages());
     result["preferences"] = serde_json::to_value(&*state.preferences.lock().unwrap()).unwrap();
     result["resources"] = json!({"Styles":resource_names(&state,"Styles"),"Themes":resource_names(&state,"Themes"),"Templates":resource_names(&state,"Templates")});
     result
@@ -348,7 +353,7 @@ async fn save_document(
         if let Some(p) = &current {
             dialog = dialog.set_file_name(p.file_name().unwrap().to_string_lossy());
         } else {
-            dialog = dialog.set_file_name("Untitled.md");
+            dialog = dialog.set_file_name(locale::text("Untitled.md"));
         }
         match dialog.blocking_save_file() {
             Some(p) => p.into_path().map_err(|e| e.to_string())?,
@@ -425,6 +430,7 @@ fn open_test_report(
     state: State<AppState>,
     content: String,
     preview: bool,
+    language: String,
 ) -> Result<(), String> {
     use sha2::{Digest, Sha256};
     let dir = std::env::var_os("MACDOWN_OPEN_TEST_DIR").ok_or("非测试运行")?;
@@ -433,7 +439,14 @@ fn open_test_report(
     let info = doc.session.info();
     let bytes = fs::read(&info.path).map_err(|e| e.to_string())?;
     let title = window.title().unwrap_or_default();
-    let report = json!({"passed":preview&&bytes==content.as_bytes()&&title==info.name,"sha256":format!("{:x}",Sha256::digest(&bytes)),"windowTitle":title,"preview":preview,"pid":std::process::id()});
+    let menu_title = app
+        .menu()
+        .and_then(|m| m.get("5QF-Oa-p0T"))
+        .and_then(|m| m.as_submenu().and_then(|s| s.text().ok()))
+        .unwrap_or_default();
+    let language_matches =
+        language == locale::selected() && menu_title == locale::menu("5QF-Oa-p0T", "Edit");
+    let report = json!({"locale":locale::selected(),"webLocale":language,"editMenu":menu_title,"languageMatches":language_matches,"passed":language_matches&&preview&&bytes==content.as_bytes()&&title==info.name,"sha256":format!("{:x}",Sha256::digest(&bytes)),"windowTitle":title,"preview":preview,"pid":std::process::id()});
     atomic_write(
         &PathBuf::from(dir).join("report.json"),
         &serde_json::to_vec_pretty(&report).unwrap(),
@@ -658,7 +671,7 @@ async fn preferences_window(app: AppHandle) -> Result<(), String> {
         "preferences",
         WebviewUrl::App("index.html?preferences".into()),
     )
-    .title("Preferences")
+    .title(locale::text("Preferences"))
     .inner_size(760.0, 600.0)
     .resizable(false)
     .build()
@@ -797,7 +810,7 @@ async fn install_cli(app: AppHandle) -> Result<Option<String>, String> {
     let Some(folder) = app
         .dialog()
         .file()
-        .set_title("选择命令行工具安装目录")
+        .set_title(locale::text("选择命令行工具安装目录"))
         .blocking_pick_folder()
     else {
         return Ok(None);

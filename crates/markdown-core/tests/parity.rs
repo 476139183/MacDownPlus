@@ -6,7 +6,7 @@ fn default_extensions_and_opt_in_extensions_follow_macdown() {
     let input = "~~gone~~ ==marked== _under_ x^2\n\n- [x] task\n\n| a | b |\n|---|---|\n| 1 | 2 |";
     let defaults = compatible_body(input, &p, false);
     assert!(defaults.contains("<table>"));
-    assert!(!defaults.contains("<del>"));
+    assert!(defaults.contains("<del>"));
     assert!(!defaults.contains("<mark>"));
     assert!(!defaults.contains("checkbox"));
     for key in [
@@ -69,4 +69,33 @@ fn preference_schema_rejects_unknown_or_invalid_fields() {
     assert!(p.set("nonexistent", json!(true)).is_err());
     assert!(p.set("htmlMathJax", json!("true")).is_err());
     assert!(p.set("editorHorizontalInset", json!(-10)).is_err());
+}
+
+#[test]
+fn inline_colors_survive_rendering_without_allowing_arbitrary_css() {
+    let p = Preferences::default();
+    let rendered = render_with_preferences(
+        r##"<span style="color:#c62828;background-color:#fff59d;position:fixed;background-image:url(https://example.test/leak)">**有色文字**</span><span style="color:expression(alert(1));background-color:#abc" onclick="alert(1)">safe</span>"##,
+        None,
+        "Colors",
+        &p,
+        "",
+    );
+    assert!(rendered.body.contains("color:#c62828"), "{}", rendered.body);
+    assert!(rendered.body.contains("background-color:#fff59d"));
+    assert!(rendered.body.contains("<strong>有色文字</strong>"));
+    assert!(rendered.body.contains("background-color:#abc"));
+    for forbidden in [
+        "position",
+        "background-image",
+        "example.test",
+        "expression",
+        "onclick",
+    ] {
+        assert!(
+            !rendered.body.contains(forbidden),
+            "{forbidden}: {}",
+            rendered.body
+        );
+    }
 }

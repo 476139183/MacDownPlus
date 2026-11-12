@@ -36,6 +36,6 @@ for mode in ['cold','warm']:
         assert report['sha256']==expected,report
         assert report['windowTitle']==document.name,report
         assert hashlib.sha256(document.read_bytes()).hexdigest()==expected,'Opening changed the source document'
-        results.append({'mode':mode,'passed':True,'readOnly':True,'bytes':document.stat().st_size})
+        results.append({'mode':mode,'passed':True,'readOnly':True,'bytes':document.stat().st_size,'locale':report['locale'],'webLocale':report['webLocale'],'editMenu':report['editMenu'],'languageMatches':report['languageMatches']})
         time.sleep(.3)
 print(json.dumps(results,ensure_ascii=False,indent=2))

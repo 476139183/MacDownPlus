@@ -140,6 +140,29 @@ fn embedded_image(url: &str, root: Option<&Path>) -> Option<String> {
     Some(format!("data:{mime};base64,{}", STANDARD.encode(bytes)))
 }
 
+// Inline formatting admits only literal colors, never arbitrary layout or external resources.
+fn safe_color_style(value: &str) -> Option<String> {
+    static HEX: OnceLock<Regex> = OnceLock::new();
+    let hex =
+        HEX.get_or_init(|| Regex::new(r"^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$").unwrap());
+    let mut declarations = Vec::new();
+    for declaration in value.split(';') {
+        let Some((key, color)) = declaration.split_once(':') else {
+            continue;
+        };
+        let key = key.trim().to_ascii_lowercase();
+        let color = color.trim().to_ascii_lowercase();
+        if matches!(key.as_str(), "color" | "background-color") && hex.is_match(&color) {
+            declarations.push(format!("{key}:{color}"));
+        }
+    }
+    if declarations.is_empty() {
+        None
+    } else {
+        Some(declarations.join(";"))
+    }
+}
+
 pub fn render_with_preferences(
     markdown: &str,
     root: Option<&Path>,
@@ -189,11 +212,14 @@ pub fn render_with_preferences(
     cleaner
         .add_tags(["input", "mark", "u", "q", "s", "del", "sup", "span", "div"])
         .add_generic_attributes(["id", "class"])
+        .add_tag_attributes("span", ["style"])
         .add_tag_attributes("input", ["type", "checked", "disabled"])
         .add_tag_attributes("pre", ["data-information"])
         .add_url_schemes(["data", "file"])
         .attribute_filter(move |tag, attr, value| {
-            if attr == "href" && value.trim().to_ascii_lowercase().starts_with("data:") {
+            if tag == "span" && attr == "style" {
+                safe_color_style(value).map(Cow::Owned)
+            } else if attr == "href" && value.trim().to_ascii_lowercase().starts_with("data:") {
                 None
             } else if tag == "img" && attr == "src" {
                 embedded_image(value, image_root.as_deref()).map(Cow::Owned)
